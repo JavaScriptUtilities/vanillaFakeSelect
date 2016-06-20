@@ -1,0 +1,27 @@
+<!DOCTYPE HTML>
+<html lang="en-EN">
+    <head>
+    <meta charset="UTF-8" />
+    <title>Vanilla Fake Select</title>
+    <link rel="stylesheet" type="text/css" href="css/fake-select.css" />
+    <script src="js/script.js"></script>
+    <script src="js/fake-select.js"></script>
+    </head>
+    <body>
+        <h1>Vanilla Fake Select</h1>
+        <div>
+            <select name="test-select" id="test-select">
+                <option value="" disabled selected style="display:none;">Select a value</option>
+                <option value="0">Value 0</option>
+                <option value="1">Value 1</option>
+            </select>
+        </div>
+        <script>
+        window.domReady(function(){
+            new vanillaFakeSelect(document.getElementById('test-select'), {
+                coverClass: 'fakeselect--demo'
+            });
+        });
+        </script>
+    </body>
+</html>

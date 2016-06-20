@@ -1,0 +1,109 @@
+@charset "UTF-8";
+
+/* ----------------------------------------------------------
+  Layout
+---------------------------------------------------------- */
+
+.fakeselect-wrapper {
+    z-index: 1;
+    position: relative;
+}
+
+.fakeselect-wrapper select {
+    z-index: 1;
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+}
+
+/* Cover
+-------------------------- */
+
+.fakeselect-cover {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+}
+
+/* List
+-------------------------- */
+
+.fakeselect-list {
+    visibility: hidden;
+    z-index: 1;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    left: 0;
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+    opacity: 0;
+    -webkit-transition: all 0.3s ease;
+    transition: all 0.3s ease;
+}
+
+[data-visible="1"] .fakeselect-list {
+    visibility: visible;
+    opacity: 0.999;
+}
+
+/* ----------------------------------------------------------
+  Base theme
+---------------------------------------------------------- */
+
+.fakeselect--demo {
+    border: 1px solid #e0e0e0;
+    text-align: left;
+    font: 12px sans-serif;
+    line-height: 2;
+    background-color: #f0f0f0;
+}
+
+.fakeselect--demo,
+.fakeselect--demo * {
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+.fakeselect--demo .fakeselect-cover {
+    padding: 0 0.5em;
+    padding-right: 3em;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.fakeselect--demo .fakeselect-cover:after {
+    content: '';
+    z-index: 1;
+    position: absolute;
+    top: 5px;
+    right: 1em;
+    bottom: 0;
+    width: 0;
+    height: 0;
+    margin: auto;
+    border: 5px solid transparent;
+    border-top: 5px solid #333;
+}
+
+.fakeselect--demo .fakeselect-list {
+    right: -1px;
+    left: -1px;
+    border: 1px solid #e0e0e0;
+    border-top: 0;
+    background-color: #f0f0f0;
+}
+
+.fakeselect--demo .fakeselect-list li {
+    padding: 0 0.5em;
+    -webkit-transition: all 0.3s ease;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.fakeselect--demo .fakeselect-list li[data-current="1"],
+.fakeselect--demo .fakeselect-list li:hover {
+    background-color: #e0e0e0;
+}
