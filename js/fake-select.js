@@ -1,6 +1,6 @@
 /*
  * Plugin Name: Vanilla Fake Select
- * Version: 0.1
+ * Version: 0.2
  * Plugin URL: https://github.com/Darklg/JavaScriptUtilities
  * JavaScriptUtilities Vanilla Fake Select may be freely distributed under the MIT license.
  */
@@ -86,8 +86,8 @@ var vanillaFakeSelect = function(el, settings) {
     /* Method set Events */
     self.setEvents = function() {
 
-        // Set first item
-        self.setCurrentValue(0);
+        // Select first item
+        self.setCurrentValue(0, false);
 
         // Click on list item
         for (var i = 0, len = self.listItems.length; i < len; i++) {
@@ -102,6 +102,7 @@ var vanillaFakeSelect = function(el, settings) {
 
         // Select change : set cover
         self.el.addEventListener('change', self.setCoverValue, 1);
+        self.el.addEventListener('initcover', self.setCoverValue, 1);
     };
 
     /* Method set Current value event */
@@ -110,11 +111,15 @@ var vanillaFakeSelect = function(el, settings) {
     };
 
     /* Method set Current value */
-    self.setCurrentValue = function(i) {
+    self.setCurrentValue = function(i, triggerChange) {
+        triggerChange = typeof triggerChange === "boolean" ? triggerChange : true;
+
         // Trigger changes on select
         self.el.selectedIndex = i;
         self.wrapper.setAttribute('data-visible', 0);
-        self.el.dispatchEvent(new Event('change'));
+        if (triggerChange) {
+            self.el.dispatchEvent(new Event('change'));
+        }
 
         // Remove current class
         for (var ii = 0, len = self.listItems.length; ii < len; ii++) {
@@ -147,6 +152,7 @@ var vanillaFakeSelect = function(el, settings) {
         parentItem.appendChild(self.el);
         /* Remove events */
         self.el.removeEventListener('change', self.setCoverValue);
+        self.el.removeEventListener('initcover', self.initCoverValue);
         /* Delete wrapper */
         parentItem.removeChild(self.wrapper);
     };
