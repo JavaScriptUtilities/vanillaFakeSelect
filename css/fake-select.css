@@ -9,6 +9,10 @@
     position: relative;
 }
 
+.fakeselect-wrapper[data-visible="1"] {
+    z-index: 2;
+}
+
 .fakeselect-wrapper select {
     z-index: 1;
     position: absolute;
@@ -88,6 +92,11 @@
     border-top: 5px solid #333;
 }
 
+.fakeselect--demo .fakeselect-list,
+.fakeselect--demo .fakeselect-list {
+    font: inherit;
+}
+
 .fakeselect--demo .fakeselect-list {
     right: -1px;
     left: -1px;
@@ -106,4 +115,10 @@
 .fakeselect--demo .fakeselect-list li[data-current="1"],
 .fakeselect--demo .fakeselect-list li:hover {
     background-color: #e0e0e0;
+}
+
+.fakeselect--demo .fakeselect-list li[data-disabled="1"] {
+    color: #777;
+    background-color: transparent!important;
+    cursor: disabled;
 }

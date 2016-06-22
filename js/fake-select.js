@@ -1,6 +1,6 @@
 /*
  * Plugin Name: Vanilla Fake Select
- * Version: 0.2
+ * Version: 0.2.1
  * Plugin URL: https://github.com/Darklg/JavaScriptUtilities
  * JavaScriptUtilities Vanilla Fake Select may be freely distributed under the MIT license.
  */
@@ -72,6 +72,9 @@ var vanillaFakeSelect = function(el, settings) {
         for (var i = 0, len = self.el.options.length; i < len; i++) {
             self.listItems[i] = document.createElement('li');
             self.listItems[i].setAttribute('data-i', i);
+            if (self.el.options[i].disabled) {
+                self.listItems[i].setAttribute('data-disabled', 1);
+            }
             self.listItems[i].innerHTML = self.el.options[i].innerHTML;
             self.list.appendChild(self.listItems[i]);
         }
@@ -91,6 +94,9 @@ var vanillaFakeSelect = function(el, settings) {
 
         // Click on list item
         for (var i = 0, len = self.listItems.length; i < len; i++) {
+            if (self.listItems[i].getAttribute('data-disabled') == 1) {
+                continue;
+            }
             self.listItems[i].addEventListener('click', self.setCurrentValueEvent);
         }
 
@@ -172,7 +178,7 @@ vanillaFakeSelect.prototype.getSettings = function(settings) {
         if ('loadElement' in settings && settings.loadElement.getAttribute('data-settings')) {
             nSettings = JSON.parse(settings.loadElement.getAttribute('data-settings'));
             if (typeof nSettings == 'object') {
-                nSettings.slider = settings.loadElement;
+                nSettings.el = settings.loadElement;
                 settings = nSettings;
             }
         }
