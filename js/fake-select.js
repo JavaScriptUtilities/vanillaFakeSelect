@@ -1,6 +1,6 @@
 /*
  * Plugin Name: Vanilla Fake Select
- * Version: 0.2.1
+ * Version: 0.3
  * Plugin URL: https://github.com/Darklg/JavaScriptUtilities
  * JavaScriptUtilities Vanilla Fake Select may be freely distributed under the MIT license.
  */
@@ -109,6 +109,25 @@ var vanillaFakeSelect = function(el, settings) {
         // Select change : set cover
         self.el.addEventListener('change', self.setCoverValue, 1);
         self.el.addEventListener('initcover', self.setCoverValue, 1);
+
+        // Click outside
+        window.addEventListener('click', self.clickOutside, 1);
+        window.addEventListener('keydown', self.keyboardEvents, 1);
+    };
+
+    /* Keyboard events */
+    self.keyboardEvents = function(e) {
+        /* Close */
+        if (e.keyCode == 27) {
+            self.wrapper.setAttribute('data-visible', '0');
+        }
+    };
+
+    /* Click outside wrapper : close */
+    self.clickOutside = function(e) {
+        if (!self.wrapper.contains(e.target)) {
+            self.wrapper.setAttribute('data-visible', '0');
+        }
     };
 
     /* Method set Current value event */
@@ -159,6 +178,9 @@ var vanillaFakeSelect = function(el, settings) {
         /* Remove events */
         self.el.removeEventListener('change', self.setCoverValue);
         self.el.removeEventListener('initcover', self.initCoverValue);
+        window.removeEventListener('click', self.clickOutside);
+        window.removeEventListener('keydown', self.keyboardEvents);
+
         /* Delete wrapper */
         parentItem.removeChild(self.wrapper);
     };
