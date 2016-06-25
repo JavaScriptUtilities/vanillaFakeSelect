@@ -9,7 +9,7 @@
     position: relative;
 }
 
-.fakeselect-wrapper[data-visible="1"] {
+.fakeselect-wrapper[aria-expanded="true"] {
     z-index: 2;
 }
 
@@ -47,7 +47,7 @@
     transition: all 0.3s ease;
 }
 
-[data-visible="1"] .fakeselect-list {
+[aria-expanded="true"] .fakeselect-list {
     visibility: visible;
     opacity: 0.999;
 }

@@ -1,6 +1,6 @@
 /*
  * Plugin Name: Vanilla Fake Select
- * Version: 0.3
+ * Version: 0.4
  * Plugin URL: https://github.com/Darklg/JavaScriptUtilities
  * JavaScriptUtilities Vanilla Fake Select may be freely distributed under the MIT license.
  */
@@ -20,6 +20,7 @@ var vanillaFakeSelect = function(el, settings) {
     self.cover = false;
     self.list = false;
     self.listItems = [];
+    self.isExpanded = false;
 
     /* Method init */
     self.init = function(settings) {
@@ -48,9 +49,9 @@ var vanillaFakeSelect = function(el, settings) {
     /* Method : set wrapper */
     self.setElWrapper = function() {
         self.wrapper = document.createElement('div');
+        self.wrapper.setAttribute('role', 'combobox');
         self.wrapper.className = 'fakeselect-wrapper ' + self.settings.coverClass;
-        self.wrapper.setAttribute('data-visible', '0');
-
+        self.setVisibility(false);
     };
 
     /* Method : set cover */
@@ -67,11 +68,13 @@ var vanillaFakeSelect = function(el, settings) {
         // Create list
         self.list = document.createElement('ul');
         self.list.className = 'fakeselect-list';
+        self.list.setAttribute('role', 'listbox');
 
         // Create values
         for (var i = 0, len = self.el.options.length; i < len; i++) {
             self.listItems[i] = document.createElement('li');
             self.listItems[i].setAttribute('data-i', i);
+            self.listItems[i].setAttribute('role', 'option');
             if (self.el.options[i].disabled) {
                 self.listItems[i].setAttribute('data-disabled', 1);
             }
@@ -102,8 +105,7 @@ var vanillaFakeSelect = function(el, settings) {
 
         // click cover : toggle visibility list
         self.cover.addEventListener('click', function() {
-            var val = self.wrapper.getAttribute('data-visible');
-            self.wrapper.setAttribute('data-visible', val == '0' ? '1' : '0');
+            self.setVisibility();
         }, 1);
 
         // Select change : set cover
@@ -119,14 +121,30 @@ var vanillaFakeSelect = function(el, settings) {
     self.keyboardEvents = function(e) {
         /* Close */
         if (e.keyCode == 27) {
-            self.wrapper.setAttribute('data-visible', '0');
+            self.setVisibility(false);
+        }
+
+        /* Expanded : set temp value */
+        if (self.isExpanded) {
+            /* Arrow up */
+            if (e.keyCode == 38) {
+                self.setActiveListItem('less');
+            }
+            /* Arrow down */
+            if (e.keyCode == 40) {
+                self.setActiveListItem('plus');
+            }
+            /* Enter */
+            if (e.keyCode == 13) {
+                self.setCurrentValue(self.tmpValue, true);
+            }
         }
     };
 
     /* Click outside wrapper : close */
     self.clickOutside = function(e) {
         if (!self.wrapper.contains(e.target)) {
-            self.wrapper.setAttribute('data-visible', '0');
+            self.setVisibility(false);
         }
     };
 
@@ -141,19 +159,14 @@ var vanillaFakeSelect = function(el, settings) {
 
         // Trigger changes on select
         self.el.selectedIndex = i;
-        self.wrapper.setAttribute('data-visible', 0);
+        self.setVisibility(false);
         if (triggerChange) {
-            self.el.dispatchEvent(new Event('change'));
+            var event = document.createEvent('HTMLEvents');
+            event.initEvent('change', true, false);
+            self.el.dispatchEvent(event);
         }
 
-        // Remove current class
-        for (var ii = 0, len = self.listItems.length; ii < len; ii++) {
-            self.listItems[ii].setAttribute('data-current', 0);
-        }
-
-        // Add current class on current item
-        self.listItems[i].setAttribute('data-current', 1);
-
+        self.setActiveListItem(i);
     };
 
     /* Method set Cover */
@@ -166,6 +179,56 @@ var vanillaFakeSelect = function(el, settings) {
         }
 
         self.cover.innerHTML = tmpValue;
+    };
+
+    /* Toggle list visibility */
+    self.setVisibility = function(mode) {
+        if (typeof mode != 'boolean') {
+            mode = !self.isExpanded;
+        }
+        self.isExpanded = mode;
+        self.wrapper.setAttribute('aria-expanded', self.isExpanded);
+
+        /* Set temporary value on toggle */
+        self.tmpValue = self.el.selectedIndex;
+    };
+
+    /* Set active list item */
+    self.setActiveListItem = function(i) {
+
+        var maxItemNb = self.listItems.length;
+
+        if (i == 'plus') {
+            i = self.tmpValue + 1;
+        }
+
+        if (i == 'less') {
+            i = self.tmpValue - 1;
+        }
+
+        if (typeof i != 'number') {
+            i = self.tmpValue;
+        }
+
+        i = Math.max(0, i);
+        i = Math.min(maxItemNb - 1, i);
+
+        // If item is disabled : do not move
+        if (self.el.options[i].disabled) {
+            return false;
+        }
+
+        // Ensure tmpValue is correct
+        self.tmpValue = i;
+
+        // Remove current class
+        for (var ii = 0; ii < maxItemNb; ii++) {
+            self.listItems[ii].setAttribute('data-current', 0);
+        }
+
+        // Add current class on current item
+        self.listItems[i].setAttribute('data-current', 1);
+
     };
 
     /* Destroy method

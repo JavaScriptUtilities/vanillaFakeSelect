@@ -3,9 +3,22 @@
     <head>
     <meta charset="UTF-8" />
     <title>Vanilla Fake Select</title>
-    <link rel="stylesheet" type="text/css" href="css/fake-select.css?v=0.3" />
-    <script src="js/script.js?v=0.3"></script>
-    <script src="js/fake-select.js?v=0.3"></script>
+    <link rel="stylesheet" type="text/css" href="css/fake-select.css?v=0.4" />
+    <script src="js/script.js?v=0.4"></script>
+    <script src="js/fake-select.js?v=0.4"></script>
+    <style>
+.display-style {
+    display: block;
+    margin: 30px 0;
+    padding: 10px;
+    border: 1px solid #E0E0E0;
+    font-family: monospace;
+    font-size: 12px;
+    white-space: pre;
+    unicode-bidi: embed;
+    background-color: #fff;
+}
+    </style>
     </head>
     <body>
         <h1>Vanilla Fake Select</h1>
@@ -16,12 +29,10 @@
                 <option value="1">Value 1</option>
             </select>
         </div>
-        <script>
-        window.domReady(function(){
-            new vanillaFakeSelect(document.getElementById('test-select'), {
-                coverClass: 'fakeselect--demo'
-            });
-        });
-        </script>
+        <script class="display-style">window.domReady(function(){
+    window.fakfak = new vanillaFakeSelect(document.getElementById('test-select'), {
+        coverClass: 'fakeselect--demo'
+    });
+});</script>
     </body>
 </html>
