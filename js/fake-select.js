@@ -1,13 +1,14 @@
 /*
  * Plugin Name: Vanilla Fake Select
- * Version: 0.4
+ * Version: 0.5
  * Plugin URL: https://github.com/Darklg/JavaScriptUtilities
  * JavaScriptUtilities Vanilla Fake Select may be freely distributed under the MIT license.
  */
 
-"use strict";
+/* jshint browser: true */
 
 var vanillaFakeSelect = function(el, settings) {
+    "use strict";
     var self = this;
     self.defaultSettings = {
         coverText: 'Select a value',
@@ -33,6 +34,9 @@ var vanillaFakeSelect = function(el, settings) {
     -------------------------- */
 
     self.setElements = function() {
+
+        self.el.setAttribute('tabindex', '-1');
+
         // Create items
         self.setElWrapper();
         self.setElCover();
@@ -56,7 +60,7 @@ var vanillaFakeSelect = function(el, settings) {
 
     /* Method : set cover */
     self.setElCover = function() {
-        self.cover = document.createElement('div');
+        self.cover = document.createElement('button');
         self.cover.className = 'fakeselect-cover';
         self.setCoverValue();
         self.wrapper.appendChild(self.cover);
@@ -104,7 +108,8 @@ var vanillaFakeSelect = function(el, settings) {
         }
 
         // click cover : toggle visibility list
-        self.cover.addEventListener('click', function() {
+        self.cover.addEventListener('click', function(e) {
+            e.preventDefault();
             self.setVisibility();
         }, 1);
 
@@ -136,9 +141,23 @@ var vanillaFakeSelect = function(el, settings) {
             }
             /* Enter */
             if (e.keyCode == 13) {
+                e.preventDefault();
                 self.setCurrentValue(self.tmpValue, true);
+                self.setVisibility(false);
             }
         }
+
+        /* Not expanded but focused */
+        if (!self.isExpanded && self.isFocused()) {
+            /* Arrow down */
+            if (e.keyCode == 40) {
+                self.setVisibility(true);
+            }
+        }
+    };
+
+    self.isFocused = function() {
+        return document.activeElement == self.cover;
     };
 
     /* Click outside wrapper : close */
@@ -195,8 +214,8 @@ var vanillaFakeSelect = function(el, settings) {
 
     /* Set active list item */
     self.setActiveListItem = function(i) {
-
-        var maxItemNb = self.listItems.length;
+        var maxItemNb = self.listItems.length,
+            originI = i;
 
         if (i == 'plus') {
             i = self.tmpValue + 1;
@@ -215,6 +234,15 @@ var vanillaFakeSelect = function(el, settings) {
 
         // If item is disabled : do not move
         if (self.el.options[i].disabled) {
+            // Try to jump the disabled item
+            // Plus
+            if (originI == 'plus' && i < maxItemNb) {
+                self.setActiveListItem(i + 1);
+            }
+            // Less
+            if (originI == 'less' && i > 0) {
+                self.setActiveListItem(i - 1);
+            }
             return false;
         }
 
@@ -236,8 +264,13 @@ var vanillaFakeSelect = function(el, settings) {
 
     self.destroyCalls = function() {
         var parentItem = self.wrapper.parentNode;
+
+        /* Restore select */
+        self.el.removeAttribute('tabindex');
+
         /* Move select */
         parentItem.appendChild(self.el);
+
         /* Remove events */
         self.el.removeEventListener('change', self.setCoverValue);
         self.el.removeEventListener('initcover', self.initCoverValue);

@@ -24,6 +24,16 @@
 -------------------------- */
 
 .fakeselect-cover {
+    display: block;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    text-align: left;
+    font: inherit;
+    background: none;
     -webkit-user-select: none;
     -moz-user-select: none;
     user-select: none;
