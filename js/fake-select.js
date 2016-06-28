@@ -1,6 +1,6 @@
 /*
  * Plugin Name: Vanilla Fake Select
- * Version: 0.5
+ * Version: 0.5.1
  * Plugin URL: https://github.com/Darklg/JavaScriptUtilities
  * JavaScriptUtilities Vanilla Fake Select may be freely distributed under the MIT license.
  */
@@ -150,7 +150,7 @@ var vanillaFakeSelect = function(el, settings) {
         /* Not expanded but focused */
         if (!self.isExpanded && self.isFocused()) {
             /* Arrow down */
-            if (e.keyCode == 40) {
+            if (e.keyCode == 38 || e.keyCode == 40) {
                 self.setVisibility(true);
             }
         }
@@ -256,6 +256,9 @@ var vanillaFakeSelect = function(el, settings) {
 
         // Add current class on current item
         self.listItems[i].setAttribute('data-current', 1);
+        if (self.listItems[i].scrollIntoView) {
+            self.listItems[i].scrollIntoView();
+        }
 
     };
 
