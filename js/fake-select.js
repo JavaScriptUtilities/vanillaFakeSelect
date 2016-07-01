@@ -1,6 +1,6 @@
 /*
  * Plugin Name: Vanilla Fake Select
- * Version: 0.5.1
+ * Version: 0.5.2
  * Plugin URL: https://github.com/Darklg/JavaScriptUtilities
  * JavaScriptUtilities Vanilla Fake Select may be freely distributed under the MIT license.
  */
@@ -13,6 +13,7 @@ var vanillaFakeSelect = function(el, settings) {
     self.defaultSettings = {
         coverText: 'Select a value',
         coverClass: '',
+        enableScrollIntoView: false,
     };
 
     /* Items */
@@ -131,12 +132,20 @@ var vanillaFakeSelect = function(el, settings) {
 
         /* Expanded : set temp value */
         if (self.isExpanded) {
+
+            /* Tab */
+            if (e.keyCode == 9) {
+                self.setVisibility(false);
+            }
+
             /* Arrow up */
             if (e.keyCode == 38) {
+                e.preventDefault();
                 self.setActiveListItem('less');
             }
             /* Arrow down */
             if (e.keyCode == 40) {
+                e.preventDefault();
                 self.setActiveListItem('plus');
             }
             /* Enter */
@@ -151,6 +160,7 @@ var vanillaFakeSelect = function(el, settings) {
         if (!self.isExpanded && self.isFocused()) {
             /* Arrow down */
             if (e.keyCode == 38 || e.keyCode == 40) {
+                e.preventDefault();
                 self.setVisibility(true);
             }
         }
@@ -256,7 +266,7 @@ var vanillaFakeSelect = function(el, settings) {
 
         // Add current class on current item
         self.listItems[i].setAttribute('data-current', 1);
-        if (self.listItems[i].scrollIntoView) {
+        if (settings.enableScrollIntoView && self.listItems[i].scrollIntoView) {
             self.listItems[i].scrollIntoView();
         }
 
