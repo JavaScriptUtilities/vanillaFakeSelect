@@ -1,6 +1,6 @@
 /*
  * Plugin Name: Vanilla Fake Select
- * Version: 0.5.2
+ * Version: 0.6
  * Plugin URL: https://github.com/Darklg/JavaScriptUtilities
  * JavaScriptUtilities Vanilla Fake Select may be freely distributed under the MIT license.
  */
@@ -23,6 +23,11 @@ var vanillaFakeSelect = function(el, settings) {
     self.list = false;
     self.listItems = [];
     self.isExpanded = false;
+
+    /* Autocomplete */
+    self.letter = '';
+    self.autocomplete = '';
+    self.autocompleteTimer = false;
 
     /* Method init */
     self.init = function(settings) {
@@ -127,6 +132,7 @@ var vanillaFakeSelect = function(el, settings) {
     self.keyboardEvents = function(e) {
         /* Close */
         if (e.keyCode == 27) {
+            self.clearAutocomplete();
             self.setVisibility(false);
         }
 
@@ -164,6 +170,47 @@ var vanillaFakeSelect = function(el, settings) {
                 self.setVisibility(true);
             }
         }
+
+        /* Focused */
+        if (self.isFocused()) {
+            /* Letter : autocomplete */
+            self.letter = String.fromCharCode(event.keyCode);
+            if (/[a-zA-Z0-9-_ ]/.test(self.letter)) {
+                /* Disable timeout */
+                clearTimeout(self.autocompleteTimer);
+                /* Add to autocomplete */
+                self.autocomplete += self.letter.toLowerCase();
+                /* Search for a value */
+                self.setActiveAutocompleteMatch(self.autocomplete);
+                /* After a certain time : disable autocomplete */
+                self.autocompleteTimer = setTimeout(self.clearAutocomplete, 1000);
+            }
+        }
+    };
+
+    self.setActiveAutocompleteMatch = function(autocomplete) {
+        autocomplete = autocomplete || '';
+        var i,
+            tmpValue,
+            aLen = autocomplete.length,
+            maxItemNb = self.listItems.length;
+
+        /* Search first result starting with autocomplete */
+        for (i = 0; i < maxItemNb; i++) {
+            tmpValue = self.listItems[i].innerHTML.toLowerCase();
+            if (!self.listItems[i].disabled && tmpValue.substring(0, aLen) == autocomplete) {
+                /* Select */
+                self.setCurrentValue(i);
+                break;
+            }
+        }
+
+    };
+
+    self.clearAutocomplete = function() {
+        clearTimeout(self.autocompleteTimer);
+        self.letter = '';
+        self.autocomplete = '';
     };
 
     self.isFocused = function() {
