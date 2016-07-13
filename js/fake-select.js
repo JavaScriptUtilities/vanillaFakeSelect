@@ -1,6 +1,6 @@
 /*
  * Plugin Name: Vanilla Fake Select
- * Version: 0.6
+ * Version: 0.7
  * Plugin URL: https://github.com/Darklg/JavaScriptUtilities
  * JavaScriptUtilities Vanilla Fake Select may be freely distributed under the MIT license.
  */
@@ -14,6 +14,9 @@ var vanillaFakeSelect = function(el, settings) {
         coverText: 'Select a value',
         coverClass: '',
         enableScrollIntoView: false,
+        fakeOptionTemplate: function(el) {
+            return el.innerHTML;
+        }
     };
 
     /* Items */
@@ -23,6 +26,7 @@ var vanillaFakeSelect = function(el, settings) {
     self.list = false;
     self.listItems = [];
     self.isExpanded = false;
+    self.userInteracted = false;
 
     /* Autocomplete */
     self.letter = '';
@@ -68,7 +72,7 @@ var vanillaFakeSelect = function(el, settings) {
     self.setElCover = function() {
         self.cover = document.createElement('button');
         self.cover.className = 'fakeselect-cover';
-        self.setCoverValue();
+        self.setCoverValue(true);
         self.wrapper.appendChild(self.cover);
     };
 
@@ -88,7 +92,7 @@ var vanillaFakeSelect = function(el, settings) {
             if (self.el.options[i].disabled) {
                 self.listItems[i].setAttribute('data-disabled', 1);
             }
-            self.listItems[i].innerHTML = self.el.options[i].innerHTML;
+            self.listItems[i].innerHTML = self.settings.fakeOptionTemplate(self.el.options[i]);
             self.list.appendChild(self.listItems[i]);
         }
 
@@ -193,12 +197,12 @@ var vanillaFakeSelect = function(el, settings) {
         var i,
             tmpValue,
             aLen = autocomplete.length,
-            maxItemNb = self.listItems.length;
+            maxItemNb = self.el.options.length;
 
         /* Search first result starting with autocomplete */
         for (i = 0; i < maxItemNb; i++) {
-            tmpValue = self.listItems[i].innerHTML.toLowerCase();
-            if (!self.listItems[i].disabled && tmpValue.substring(0, aLen) == autocomplete) {
+            tmpValue = self.el.options[i].innerHTML.toLowerCase();
+            if (!self.el.options[i].disabled && tmpValue.substring(0, aLen) == autocomplete) {
                 /* Select */
                 self.setCurrentValue(i);
                 break;
@@ -241,17 +245,32 @@ var vanillaFakeSelect = function(el, settings) {
             event.initEvent('change', true, false);
             self.el.dispatchEvent(event);
         }
-
         self.setActiveListItem(i);
     };
 
     /* Method set Cover */
-    self.setCoverValue = function() {
-        // Get current value
-        var tmpValue = self.el.options[self.el.selectedIndex].innerHTML;
-        if (!tmpValue) {
-            // No value : default value
-            tmpValue = settings.coverText;
+    self.setCoverValue = function(initial) {
+        var tmpValue = settings.coverText,
+            tmpSelected;
+        if (!self.cover) {
+            return false;
+        }
+        if (typeof initial != 'boolean') {
+            initial = false;
+        }
+        if (initial) {
+            for (var i = 0, len = self.el.options.length; i < len; i++) {
+                tmpSelected = self.el.options[i].getAttribute('selected');
+                if (typeof tmpSelected == 'string') {
+                    tmpValue = self.el.options[i].innerHTML;
+                }
+            }
+        }
+        else {
+            // Get current value
+            if (typeof self.el.selectedIndex == 'number') {
+                tmpValue = self.el.options[self.el.selectedIndex].innerHTML;
+            }
         }
 
         self.cover.innerHTML = tmpValue;
@@ -267,6 +286,16 @@ var vanillaFakeSelect = function(el, settings) {
 
         /* Set temporary value on toggle */
         self.tmpValue = self.el.selectedIndex;
+
+        /* User has opened at least once */
+        if (mode === true) {
+            self.userInteracted = true;
+        }
+
+        /* On close : ensure placeholder is replaced */
+        if (mode === false && self.userInteracted) {
+            self.setCoverValue();
+        }
     };
 
     /* Set active list item */

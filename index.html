@@ -3,25 +3,20 @@
     <head>
     <meta charset="UTF-8" />
     <title>Vanilla Fake Select</title>
-    <link rel="stylesheet" type="text/css" href="css/fake-select.css?v=0.6" />
-    <script src="js/script.js?v=0.6"></script>
-    <script src="js/fake-select.js?v=0.6"></script>
-    <style>
-.display-style {
-    display: block;
-    margin: 30px 0;
-    padding: 10px;
-    border: 1px solid #E0E0E0;
-    font-family: monospace;
-    font-size: 12px;
-    white-space: pre;
-    unicode-bidi: embed;
-    background-color: #fff;
-}
-    </style>
+    <link rel="stylesheet" type="text/css" href="css/style.css?v=0.7" />
+    <link rel="stylesheet" type="text/css" href="css/fake-select.css?v=0.7" />
+    <link rel="stylesheet" type="text/css" href="css/fake-select-demo.css?v=0.7" />
+    <script src="js/script.js?v=0.7"></script>
+    <script src="js/fake-select.js?v=0.7"></script>
     </head>
     <body>
         <h1>Vanilla Fake Select</h1>
+        <p>
+            This script duplicates your select element to totally skin it.<br />
+            No library dependency ✌️
+        </p>
+
+        <h2>Example</h2>
         <div>
             <select name="test-select" id="test-select">
                 <option value="" disabled selected style="display:none;">Select a value</option>
@@ -33,10 +28,41 @@
                 <option value="4">cd Value 4</option>
             </select>
         </div>
-        <script class="display-style">window.domReady(function(){
-    window.fakfak = new vanillaFakeSelect(document.getElementById('test-select'), {
-        coverClass: 'fakeselect--demo'
-    });
+        <script class="display-style">new vanillaFakeSelect(document.getElementById('test-select'), {
+    coverClass: 'fakeselect--demo'
 });</script>
+        <h2>How to use it</h2>
+        <p>Download the <a target="_blank" href="https://github.com/JavaScriptUtilities/vanillaFakeSelect/archive/master.zip">latest version</a> and add in your head section :</p>
+        <pre class="display-style">&lt;link href=&quot;js/fake-select.css&quot; rel=&quot;stylesheet&quot; type=&quot;text/css&quot; /&gt;
+&lt;script src=&quot;js/fake-select.min.js&quot;&gt;&lt;/script&gt;</pre>
+        <p>Load demo skin or use it to create your own :</p>
+        <pre class="display-style">&lt;link href=&quot;js/fake-select-demo.css&quot; rel=&quot;stylesheet&quot; type=&quot;text/css&quot; /&gt;</pre>
+        <p>Init the script at domready or later :</p>
+        <pre class="display-style">new vanillaFakeSelect(document.getElementById('test-select'));</pre>
+
+        <h2>Settings</h2>
+        <p>You can customize the script by adding custom settings at init.</p>
+
+        <div>
+            <select name="test-select-2" id="test-select-2">
+                <option value="0">a Value 0</option>
+                <option value="1">ab Value 1</option>
+                <option value="2">b Value 2</option>
+                <option value="2b" disabled>Value 2b</option>
+                <option value="3">c Value 3</option>
+                <option value="4">cd Value 4</option>
+            </select>
+        </div>
+        <script class="display-style">var vfsSettings = {
+    // Default value
+    coverText: 'My default value',
+    // CSS class for wrapper
+    coverClass: 'fakeselect--demo',
+    // When too many results, enable automatic scroll into view
+    enableScrollIntoView: false,
+    // Template for fake list item content
+    fakeOptionTemplate: function(el){return '-- ' + el.innerHTML;}
+};
+new vanillaFakeSelect(document.getElementById('test-select-2'), vfsSettings);</script>
     </body>
 </html>
