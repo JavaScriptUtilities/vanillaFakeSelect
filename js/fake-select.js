@@ -1,6 +1,6 @@
 /*
  * Plugin Name: Vanilla Fake Select
- * Version: 0.7
+ * Version: 0.8
  * Plugin URL: https://github.com/Darklg/JavaScriptUtilities
  * JavaScriptUtilities Vanilla Fake Select may be freely distributed under the MIT license.
  */
@@ -11,6 +11,7 @@ var vanillaFakeSelect = function(el, settings) {
     "use strict";
     var self = this;
     self.defaultSettings = {
+        autocompleteInsideTerm: false,
         coverText: 'Select a value',
         coverClass: '',
         enableScrollIntoView: false,
@@ -178,12 +179,12 @@ var vanillaFakeSelect = function(el, settings) {
         /* Focused */
         if (self.isFocused()) {
             /* Letter : autocomplete */
-            self.letter = String.fromCharCode(event.keyCode);
-            if (/[a-zA-Z0-9-_ ]/.test(self.letter)) {
+            self.letter = String.fromCharCode(event.keyCode).toLowerCase();
+            if (/[a-z0-9-_ ]/.test(self.letter)) {
                 /* Disable timeout */
                 clearTimeout(self.autocompleteTimer);
                 /* Add to autocomplete */
-                self.autocomplete += self.letter.toLowerCase();
+                self.autocomplete += self.letter;
                 /* Search for a value */
                 self.setActiveAutocompleteMatch(self.autocomplete);
                 /* After a certain time : disable autocomplete */
@@ -201,14 +202,22 @@ var vanillaFakeSelect = function(el, settings) {
 
         /* Search first result starting with autocomplete */
         for (i = 0; i < maxItemNb; i++) {
-            tmpValue = self.el.options[i].innerHTML.toLowerCase();
-            if (!self.el.options[i].disabled && tmpValue.substring(0, aLen) == autocomplete) {
-                /* Select */
+            tmpValue = self.removeAccents(self.el.options[i].innerHTML).toLowerCase();
+            /* Ignore disabled items */
+            if (self.el.options[i].disabled) {
+                continue;
+            }
+            /* If content starts with autocomplete string */
+            if (tmpValue.substring(0, aLen) == autocomplete) {
+                self.setCurrentValue(i);
+                break;
+            }
+            /* If content contains with autocomplete string */
+            if (settings.autocompleteInsideTerm && tmpValue.search(autocomplete) > -1) {
                 self.setCurrentValue(i);
                 break;
             }
         }
-
     };
 
     self.clearAutocomplete = function() {
@@ -375,8 +384,30 @@ var vanillaFakeSelect = function(el, settings) {
     return self;
 };
 
+/* Remove Accents */
+vanillaFakeSelect.prototype.removeAccents = function(str) {
+    "use strict";
+
+    var accents = 'ÀÁÂÃÄÅàáâãäåÒÓÔÕÕÖØòóôõöøÈÉÊËèéêëðÇçÐÌÍÎÏìíîïÙÚÛÜùúûüÑñŠšŸÿýŽž',
+        accentsOut = "AAAAAAaaaaaaOOOOOOOooooooEEEEeeeeeCcDIIIIiiiiUUUUuuuuNnSsYyyZz",
+        strSplit = str.split(''),
+        accentedCharId;
+
+    /* Search if char is in accented list */
+    for (var i = 0, len = strSplit.length; i < len; i++) {
+        accentedCharId = accents.indexOf(strSplit[i]);
+        if (accentedCharId >= 0) {
+            str = str.replace(accents[accentedCharId], accentsOut[accentedCharId]);
+        }
+    }
+
+    return str;
+};
+
 /* Get Settings */
 vanillaFakeSelect.prototype.getSettings = function(settings) {
+    "use strict";
+
     var nSettings;
     if (typeof settings != 'object') {
         settings = {};
