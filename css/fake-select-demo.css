@@ -70,5 +70,20 @@
 .fakeselect--demo .fakeselect-list li[data-disabled="1"] {
     color: #777;
     background-color: transparent!important;
+    cursor: default;
     cursor: disabled;
+}
+
+.fakeselect--demo .fakeselect-list li.optgroup-label {
+    font-style: italic;
+    font-weight: bold;
+}
+
+.fakeselect--demo .fakeselect-list li.optgroup-label:hover {
+    background: none;
+    cursor: default;
+}
+
+.fakeselect--demo .fakeselect-list li[data-optgroup="1"] {
+    padding-left: 2em;
 }

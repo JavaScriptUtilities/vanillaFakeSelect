@@ -1,6 +1,6 @@
 /*
  * Plugin Name: Vanilla Fake Select
- * Version: 0.8
+ * Version: 0.9
  * Plugin URL: https://github.com/Darklg/JavaScriptUtilities
  * JavaScriptUtilities Vanilla Fake Select may be freely distributed under the MIT license.
  */
@@ -28,6 +28,7 @@ var vanillaFakeSelect = function(el, settings) {
     self.listItems = [];
     self.isExpanded = false;
     self.userInteracted = false;
+    self.previousOptgroup = false;
 
     /* Autocomplete */
     self.letter = '';
@@ -80,6 +81,8 @@ var vanillaFakeSelect = function(el, settings) {
     /* Method : set list */
     self.setElList = function() {
 
+        var tmpOptGroup;
+
         // Create list
         self.list = document.createElement('ul');
         self.list.className = 'fakeselect-list';
@@ -90,6 +93,15 @@ var vanillaFakeSelect = function(el, settings) {
             self.listItems[i] = document.createElement('li');
             self.listItems[i].setAttribute('data-i', i);
             self.listItems[i].setAttribute('role', 'option');
+
+            // Optgroup
+            tmpOptGroup = self.el.options[i].parentNode;
+            if (tmpOptGroup.tagName == 'OPTGROUP') {
+                self.listItems[i].setAttribute('data-optgroup', 1);
+                self.setOptgroup(tmpOptGroup);
+            }
+
+            // Disabled
             if (self.el.options[i].disabled) {
                 self.listItems[i].setAttribute('data-disabled', 1);
             }
@@ -99,6 +111,23 @@ var vanillaFakeSelect = function(el, settings) {
 
         // Add items to the list
         self.wrapper.appendChild(self.list);
+    };
+
+    self.setOptgroup = function(tmpOptGroup) {
+        var tmpLabel, liOptGroup;
+
+        if (tmpOptGroup == self.previousOptgroup) {
+            return;
+        }
+        self.previousOptgroup = tmpOptGroup;
+
+        tmpLabel = tmpOptGroup.getAttribute('label') || '&nbsp;';
+
+        // Create label
+        liOptGroup = document.createElement('li');
+        liOptGroup.innerHTML = tmpLabel;
+        liOptGroup.className = 'optgroup-label';
+        self.list.appendChild(liOptGroup);
     };
 
     /* Set Events
@@ -213,7 +242,7 @@ var vanillaFakeSelect = function(el, settings) {
                 break;
             }
             /* If content contains with autocomplete string */
-            if (settings.autocompleteInsideTerm && tmpValue.search(autocomplete) > -1) {
+            if (self.settings.autocompleteInsideTerm && tmpValue.search(autocomplete) > -1) {
                 self.setCurrentValue(i);
                 break;
             }
@@ -259,7 +288,7 @@ var vanillaFakeSelect = function(el, settings) {
 
     /* Method set Cover */
     self.setCoverValue = function(initial) {
-        var tmpValue = settings.coverText,
+        var tmpValue = self.settings.coverText,
             tmpSelected;
         if (!self.cover) {
             return false;
@@ -351,7 +380,7 @@ var vanillaFakeSelect = function(el, settings) {
 
         // Add current class on current item
         self.listItems[i].setAttribute('data-current', 1);
-        if (settings.enableScrollIntoView && self.listItems[i].scrollIntoView) {
+        if (self.settings.enableScrollIntoView && self.listItems[i].scrollIntoView) {
             self.listItems[i].scrollIntoView();
         }
 

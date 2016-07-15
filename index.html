@@ -3,11 +3,11 @@
     <head>
     <meta charset="UTF-8" />
     <title>Vanilla Fake Select</title>
-    <link rel="stylesheet" type="text/css" href="css/style.css?v=0.8" />
-    <link rel="stylesheet" type="text/css" href="css/fake-select.css?v=0.8" />
-    <link rel="stylesheet" type="text/css" href="css/fake-select-demo.css?v=0.8" />
-    <script src="js/script.js?v=0.8"></script>
-    <script src="js/fake-select.js?v=0.8"></script>
+    <link rel="stylesheet" type="text/css" href="css/style.css?v=0.9" />
+    <link rel="stylesheet" type="text/css" href="css/fake-select.css?v=0.9" />
+    <link rel="stylesheet" type="text/css" href="css/fake-select-demo.css?v=0.9" />
+    <script src="js/script.js?v=0.9"></script>
+    <script src="js/fake-select.js?v=0.9"></script>
     </head>
     <body>
         <h1>Vanilla Fake Select</h1>
@@ -31,6 +31,26 @@
         <script class="display-style">new vanillaFakeSelect(document.getElementById('test-select'), {
     coverClass: 'fakeselect--demo'
 });</script>
+
+        <h2>Example with optgroup</h2>
+        <div>
+            <select name="test-select-opt" id="test-select-opt">
+                <optgroup label="Test Label">
+                    <option value="0">a Value 0</option>
+                    <option value="1">ab Value 1</option>
+                    <option value="2">b Value 2</option>
+                </optgroup>
+                <optgroup label="Test Label 2">
+                    <option value="2b" disabled>Value 2b</option>
+                    <option value="3">c Value 3</option>
+                    <option value="4">cd Value 4</option>
+                </optgroup>
+            </select>
+        </div>
+        <script class="display-style">new vanillaFakeSelect(document.getElementById('test-select-opt'), {
+    coverClass: 'fakeselect--demo'
+});</script>
+
         <h2>How to use it</h2>
         <p>Download the <a target="_blank" href="https://github.com/JavaScriptUtilities/vanillaFakeSelect/archive/master.zip">latest version</a> and add in your head section :</p>
         <pre class="display-style">&lt;link href=&quot;js/fake-select.css&quot; rel=&quot;stylesheet&quot; type=&quot;text/css&quot; /&gt;
