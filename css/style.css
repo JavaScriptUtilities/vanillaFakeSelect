@@ -2,7 +2,9 @@
 
 body {
     margin: 0 auto;
+    padding: 10px;
     max-width: 600px;
+    font-family: sans-serif;
 }
 
 .display-style {
@@ -15,4 +17,11 @@ body {
     white-space: pre;
     unicode-bidi: embed;
     background-color: #fff;
+}
+
+label {
+    display: block;
+    margin-bottom: 0.3em;
+    font-size: 12px;
+    font-weight: bold;
 }

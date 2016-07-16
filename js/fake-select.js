@@ -1,6 +1,6 @@
 /*
  * Plugin Name: Vanilla Fake Select
- * Version: 0.9
+ * Version: 0.10
  * Plugin URL: https://github.com/Darklg/JavaScriptUtilities
  * JavaScriptUtilities Vanilla Fake Select may be freely distributed under the MIT license.
  */
@@ -74,8 +74,13 @@ var vanillaFakeSelect = function(el, settings) {
     self.setElCover = function() {
         self.cover = document.createElement('button');
         self.cover.className = 'fakeselect-cover';
+        self.setElDisabled();
         self.setCoverValue(true);
         self.wrapper.appendChild(self.cover);
+    };
+
+    self.setElDisabled = function() {
+        self.cover.disabled = self.el.disabled;
     };
 
     /* Method : set list */
@@ -154,6 +159,7 @@ var vanillaFakeSelect = function(el, settings) {
         }, 1);
 
         // Select change : set cover
+        self.el.addEventListener('focus', self.setFocusOnButton, 1);
         self.el.addEventListener('change', self.setCoverValue, 1);
         self.el.addEventListener('initcover', self.setCoverValue, 1);
 
@@ -314,6 +320,11 @@ var vanillaFakeSelect = function(el, settings) {
         self.cover.innerHTML = tmpValue;
     };
 
+    /* Method focus */
+    self.setFocusOnButton = function() {
+        self.cover.focus();
+    };
+
     /* Toggle list visibility */
     self.setVisibility = function(mode) {
         if (typeof mode != 'boolean') {
@@ -399,6 +410,7 @@ var vanillaFakeSelect = function(el, settings) {
         parentItem.appendChild(self.el);
 
         /* Remove events */
+        self.el.removeEventListener('focus', self.setFocusOnButton);
         self.el.removeEventListener('change', self.setCoverValue);
         self.el.removeEventListener('initcover', self.initCoverValue);
         window.removeEventListener('click', self.clickOutside);
