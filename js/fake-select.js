@@ -1,6 +1,6 @@
 /*
  * Plugin Name: Vanilla Fake Select
- * Version: 0.10
+ * Version: 0.11
  * Plugin URL: https://github.com/Darklg/JavaScriptUtilities
  * JavaScriptUtilities Vanilla Fake Select may be freely distributed under the MIT license.
  */
@@ -28,6 +28,7 @@ var vanillaFakeSelect = function(el, settings) {
     self.listItems = [];
     self.isExpanded = false;
     self.userInteracted = false;
+    self.tmpOptgroup = false;
     self.previousOptgroup = false;
 
     /* Autocomplete */
@@ -72,11 +73,13 @@ var vanillaFakeSelect = function(el, settings) {
 
     /* Method : set cover */
     self.setElCover = function() {
-        self.cover = document.createElement('button');
-        self.cover.className = 'fakeselect-cover';
+        if (!self.cover) {
+            self.cover = document.createElement('button');
+            self.cover.className = 'fakeselect-cover';
+            self.wrapper.appendChild(self.cover);
+        }
         self.setElDisabled();
         self.setCoverValue(true);
-        self.wrapper.appendChild(self.cover);
     };
 
     self.setElDisabled = function() {
@@ -86,47 +89,67 @@ var vanillaFakeSelect = function(el, settings) {
     /* Method : set list */
     self.setElList = function() {
 
-        var tmpOptGroup;
+        var i, len;
 
-        // Create list
-        self.list = document.createElement('ul');
-        self.list.className = 'fakeselect-list';
-        self.list.setAttribute('role', 'listbox');
+        // Create list if it doesn't exists
+        if (!self.list) {
+            self.list = document.createElement('ul');
+            self.list.className = 'fakeselect-list';
+            self.list.setAttribute('role', 'listbox');
+        }
+
+        // If existing values : clear all
+        if (self.listItems.length) {
+            for (i = 0, len = self.listItems.length; i < len; i++) {
+                self.unsetElListItem(i);
+            }
+        }
 
         // Create values
-        for (var i = 0, len = self.el.options.length; i < len; i++) {
-            self.listItems[i] = document.createElement('li');
-            self.listItems[i].setAttribute('data-i', i);
-            self.listItems[i].setAttribute('role', 'option');
-
-            // Optgroup
-            tmpOptGroup = self.el.options[i].parentNode;
-            if (tmpOptGroup.tagName == 'OPTGROUP') {
-                self.listItems[i].setAttribute('data-optgroup', 1);
-                self.setOptgroup(tmpOptGroup);
-            }
-
-            // Disabled
-            if (self.el.options[i].disabled) {
-                self.listItems[i].setAttribute('data-disabled', 1);
-            }
-            self.listItems[i].innerHTML = self.settings.fakeOptionTemplate(self.el.options[i]);
-            self.list.appendChild(self.listItems[i]);
+        for (i = 0, len = self.el.options.length; i < len; i++) {
+            self.setElListItem(i);
         }
 
         // Add items to the list
         self.wrapper.appendChild(self.list);
     };
 
-    self.setOptgroup = function(tmpOptGroup) {
+    /* Method : unset list item */
+    self.unsetElListItem = function(i) {
+        self.listItems[i].removeEventListener('click', self.setCurrentValueEvent);
+        self.list.removeChild(self.listItems[i]);
+    };
+
+    /* Method : set list item */
+    self.setElListItem = function(i) {
+        self.listItems[i] = document.createElement('li');
+        self.listItems[i].setAttribute('data-i', i);
+        self.listItems[i].setAttribute('role', 'option');
+
+        // Optgroup
+        self.tmpOptGroup = self.el.options[i].parentNode;
+        if (self.tmpOptGroup.tagName == 'OPTGROUP') {
+            self.listItems[i].setAttribute('data-optgroup', 1);
+            self.setOptgroup(self.tmpOptGroup);
+        }
+
+        // Disabled
+        if (self.el.options[i].disabled) {
+            self.listItems[i].setAttribute('data-disabled', 1);
+        }
+        self.listItems[i].innerHTML = self.settings.fakeOptionTemplate(self.el.options[i]);
+        self.list.appendChild(self.listItems[i]);
+    };
+
+    self.setOptgroup = function(optGroup) {
         var tmpLabel, liOptGroup;
 
-        if (tmpOptGroup == self.previousOptgroup) {
+        if (optGroup == self.previousOptgroup) {
             return;
         }
-        self.previousOptgroup = tmpOptGroup;
+        self.previousOptgroup = optGroup;
 
-        tmpLabel = tmpOptGroup.getAttribute('label') || '&nbsp;';
+        tmpLabel = optGroup.getAttribute('label') || '&nbsp;';
 
         // Create label
         liOptGroup = document.createElement('li');
@@ -139,7 +162,8 @@ var vanillaFakeSelect = function(el, settings) {
     -------------------------- */
 
     /* Method set Events */
-    self.setEvents = function() {
+    self.setEvents = function(onlyItems) {
+        onlyItems = onlyItems || false;
 
         // Select first item
         self.setCurrentValue(0, false);
@@ -149,7 +173,11 @@ var vanillaFakeSelect = function(el, settings) {
             if (self.listItems[i].getAttribute('data-disabled') == 1) {
                 continue;
             }
-            self.listItems[i].addEventListener('click', self.setCurrentValueEvent);
+            self.listItems[i].addEventListener('click', self.setCurrentValueEvent, 1);
+        }
+
+        if (onlyItems) {
+            return false;
         }
 
         // click cover : toggle visibility list
@@ -285,9 +313,7 @@ var vanillaFakeSelect = function(el, settings) {
         self.el.selectedIndex = i;
         self.setVisibility(false);
         if (triggerChange) {
-            var event = document.createEvent('HTMLEvents');
-            event.initEvent('change', true, false);
-            self.el.dispatchEvent(event);
+            self.triggerEvent(self.el, 'change');
         }
         self.setActiveListItem(i);
     };
@@ -397,6 +423,15 @@ var vanillaFakeSelect = function(el, settings) {
 
     };
 
+    /* Refresh
+    -------------------------- */
+
+    self.refresh = function() {
+        self.setElList();
+        self.setEvents(true);
+        return self;
+    };
+
     /* Destroy method
     -------------------------- */
 
@@ -470,5 +505,23 @@ vanillaFakeSelect.prototype.getSettings = function(settings) {
     // Set new values
     for (var attr2 in settings) {
         this.settings[attr2] = settings[attr2];
+    }
+};
+
+/* Get Settings */
+vanillaFakeSelect.prototype.triggerEvent = function(el, eventName, parameters) {
+    var e = false;
+    parameters = parameters || {};
+    if (document.createEventObject) {
+        e = document.createEventObject();
+        e.button = 1;
+        e.triggerParams = parameters;
+        return el.fireEvent("on" + eventName, e);
+    }
+    else {
+        e = document.createEvent("HTMLEvents");
+        e.initEvent(eventName, true, false);
+        e.triggerParams = parameters;
+        return el.dispatchEvent(e);
     }
 };
