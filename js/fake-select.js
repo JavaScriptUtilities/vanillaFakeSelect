@@ -1,6 +1,6 @@
 /*
  * Plugin Name: Vanilla Fake Select
- * Version: 0.11.2
+ * Version: 0.11.3
  * Plugin URL: https://github.com/Darklg/JavaScriptUtilities
  * JavaScriptUtilities Vanilla Fake Select may be freely distributed under the MIT license.
  */
@@ -74,7 +74,8 @@ var vanillaFakeSelect = function(el, settings) {
     /* Method : set cover */
     self.setElCover = function() {
         if (!self.cover) {
-            self.cover = document.createElement('div');
+            self.cover = document.createElement('a');
+            self.cover.setAttribute('href', '#');
             self.cover.setAttribute('role', 'button');
             self.cover.className = 'fakeselect-cover';
             self.wrapper.appendChild(self.cover);
