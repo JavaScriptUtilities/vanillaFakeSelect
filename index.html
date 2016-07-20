@@ -3,11 +3,11 @@
     <head>
     <meta charset="UTF-8" />
     <title>Vanilla Fake Select</title>
-    <link rel="stylesheet" type="text/css" href="css/style.css?v=0.11" />
-    <link rel="stylesheet" type="text/css" href="css/fake-select.css?v=0.11" />
-    <link rel="stylesheet" type="text/css" href="css/fake-select-demo.css?v=0.11" />
-    <script src="js/script.js?v=0.11"></script>
-    <script src="js/fake-select.js?v=0.11"></script>
+    <link rel="stylesheet" type="text/css" href="css/style.css?v=0.11.1" />
+    <link rel="stylesheet" type="text/css" href="css/fake-select.css?v=0.11.1" />
+    <link rel="stylesheet" type="text/css" href="css/fake-select-demo.css?v=0.11.1" />
+    <script src="js/script.js?v=0.11.1"></script>
+    <script src="js/fake-select.js?v=0.11.1"></script>
     </head>
     <body>
         <h1>Vanilla Fake Select</h1>
@@ -17,52 +17,46 @@
         </p>
 
         <h2>Example</h2>
-        <div>
-            <label for="test-select">My select field</label>
-            <select name="test-select" id="test-select">
-                <option value="" disabled selected style="display:none;">Select a value</option>
-                <option value="0">a Value 0</option>
-                <option value="1">ab Value 1</option>
-                <option value="2">b Value 2</option>
-                <option value="2b" disabled>Value 2b</option>
-                <option value="3">c Value 3</option>
-                <option value="4">cd Value 4</option>
-            </select>
-        </div>
+        <label for="test-select">My select field</label>
+        <select name="test-select" id="test-select">
+            <option value="" disabled selected style="display:none;">Select a value</option>
+            <option value="0">a Value 0</option>
+            <option value="1">ab Value 1</option>
+            <option value="2">b Value 2</option>
+            <option value="2b" disabled>Value 2b</option>
+            <option value="3">c Value 3</option>
+            <option value="4">cd Value 4</option>
+        </select>
         <script class="display-style">new vanillaFakeSelect(document.getElementById('test-select'), {
     coverClass: 'fakeselect--demo'
 });</script>
 
         <h2>Example with optgroup</h2>
-        <div>
-            <select name="test-select-opt" id="test-select-opt">
-                <optgroup label="Test Label">
-                    <option value="0">a Value 0</option>
-                    <option value="1">ab Value 1</option>
-                    <option value="2">b Value 2</option>
-                </optgroup>
-                <optgroup label="Test Label 2">
-                    <option value="2b" disabled>Value 2b</option>
-                    <option value="3">c Value 3</option>
-                    <option value="4">cd Value 4</option>
-                </optgroup>
-            </select>
-        </div>
+        <select name="test-select-opt" id="test-select-opt">
+            <optgroup label="Test Label">
+                <option value="0">a Value 0</option>
+                <option value="1">ab Value 1</option>
+                <option value="2">b Value 2</option>
+            </optgroup>
+            <optgroup label="Test Label 2">
+                <option value="2b" disabled>Value 2b</option>
+                <option value="3">c Value 3</option>
+                <option value="4">cd Value 4</option>
+            </optgroup>
+        </select>
         <script class="display-style">new vanillaFakeSelect(document.getElementById('test-select-opt'), {
     coverClass: 'fakeselect--demo'
 });</script>
 
         <h2>Example with disabled</h2>
-        <div>
-            <select disabled name="test-select-dis" id="test-select-dis">
-                <option value="0">a Value 0</option>
-                <option value="1">ab Value 1</option>
-                <option value="2">b Value 2</option>
-                <option value="2b" disabled>Value 2b</option>
-                <option value="3">c Value 3</option>
-                <option value="4">cd Value 4</option>
-            </select>
-        </div>
+        <select disabled name="test-select-dis" id="test-select-dis">
+            <option value="0">a Value 0</option>
+            <option value="1">ab Value 1</option>
+            <option value="2">b Value 2</option>
+            <option value="2b" disabled>Value 2b</option>
+            <option value="3">c Value 3</option>
+            <option value="4">cd Value 4</option>
+        </select>
         <script class="display-style">new vanillaFakeSelect(document.getElementById('test-select-dis'), {
     coverClass: 'fakeselect--demo'
 });</script>

@@ -1,6 +1,6 @@
 /*
  * Plugin Name: Vanilla Fake Select
- * Version: 0.11
+ * Version: 0.11.1
  * Plugin URL: https://github.com/Darklg/JavaScriptUtilities
  * JavaScriptUtilities Vanilla Fake Select may be freely distributed under the MIT license.
  */
@@ -56,7 +56,7 @@ var vanillaFakeSelect = function(el, settings) {
         self.setElList();
 
         // Inject wrapper next to el
-        self.el.parentNode.appendChild(self.wrapper);
+        self.el.parentNode.insertBefore(self.wrapper, self.el.nextSibling);
 
         // Move el into wrapper
         self.wrapper.appendChild(self.el);
@@ -442,7 +442,7 @@ var vanillaFakeSelect = function(el, settings) {
         self.el.removeAttribute('tabindex');
 
         /* Move select */
-        parentItem.appendChild(self.el);
+        parentItem.insertBefore(self.el, self.wrapper.nextSibling);
 
         /* Remove events */
         self.el.removeEventListener('focus', self.setFocusOnButton);
@@ -453,6 +453,8 @@ var vanillaFakeSelect = function(el, settings) {
 
         /* Delete wrapper */
         parentItem.removeChild(self.wrapper);
+
+        return self;
     };
 
     self.init(settings);
