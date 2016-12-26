@@ -41,7 +41,7 @@
 }
 
 .fakeselect--demo .fakeselect-list,
-.fakeselect--demo .fakeselect-list {
+.fakeselect--demo .fakeselect-list li {
     font: inherit;
 }
 
