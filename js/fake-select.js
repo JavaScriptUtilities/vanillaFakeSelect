@@ -1,6 +1,6 @@
 /*
  * Plugin Name: Vanilla Fake Select
- * Version: 0.11.3
+ * Version: 0.11.4
  * Plugin URL: https://github.com/Darklg/JavaScriptUtilities
  * JavaScriptUtilities Vanilla Fake Select may be freely distributed under the MIT license.
  */
@@ -167,8 +167,8 @@ var vanillaFakeSelect = function(el, settings) {
     self.setEvents = function(onlyItems) {
         onlyItems = onlyItems || false;
 
-        // Select first item
-        self.setCurrentValue(0, false);
+        // Select selected item or first item
+        self.setCurrentValue(self.el.selectedIndex ? self.el.selectedIndex : 0, false);
 
         // Click on list item
         for (var i = 0, len = self.listItems.length; i < len; i++) {
