@@ -63,3 +63,10 @@
     visibility: visible;
     opacity: 0.999;
 }
+
+/* Items
+-------------------------- */
+
+.fakeselect-list li[data-visible="0"] {
+    display: none;
+}

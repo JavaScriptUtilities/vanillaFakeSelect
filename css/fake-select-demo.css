@@ -87,3 +87,36 @@
 .fakeselect--demo .fakeselect-list li[data-optgroup="1"] {
     padding-left: 2em;
 }
+
+/* Search
+-------------------------- */
+
+.fakeselect-search {
+    z-index: 1;
+    position: relative;
+    padding-right: 0!important;
+    padding-left: 0!important;
+}
+
+.fakeselect-search input[type="text"] {
+    display: block;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    width: 100%;
+    padding: 0 1em 0 1em;
+    font: inherit;
+}
+
+.fakeselect-search button {
+    z-index: 1;
+    position: absolute;
+    top: 0;
+    right: 0;
+    border: 0;
+    font: inherit;
+    background: transparent;
+}
+
+.fakeselect-search button:before {
+    content: '→';
+}

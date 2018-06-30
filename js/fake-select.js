@@ -1,6 +1,6 @@
 /*
  * Plugin Name: Vanilla Fake Select
- * Version: 0.11.4
+ * Version: 0.12.0
  * Plugin URL: https://github.com/Darklg/JavaScriptUtilities
  * JavaScriptUtilities Vanilla Fake Select may be freely distributed under the MIT license.
  */
@@ -12,6 +12,9 @@ var vanillaFakeSelect = function(el, settings) {
     var self = this;
     self.defaultSettings = {
         autocompleteInsideTerm: false,
+        displaySearch: true,
+        searchResetSearchOnClose: false,
+        searchText: 'Search a value',
         coverText: 'Select a value',
         coverClass: '',
         enableScrollIntoView: false,
@@ -23,6 +26,8 @@ var vanillaFakeSelect = function(el, settings) {
     /* Items */
     self.el = el;
     self.wrapper = false;
+    self.searchBox = false;
+    self.searchField = false;
     self.cover = false;
     self.list = false;
     self.listItems = [];
@@ -107,6 +112,10 @@ var vanillaFakeSelect = function(el, settings) {
             }
         }
 
+        if (self.settings.displaySearch) {
+            self.setSearchFieldItem();
+        }
+
         // Create values
         for (i = 0, len = self.el.options.length; i < len; i++) {
             self.setElListItem(i);
@@ -120,6 +129,20 @@ var vanillaFakeSelect = function(el, settings) {
     self.unsetElListItem = function(i) {
         self.listItems[i].removeEventListener('click', self.setCurrentValueEvent);
         self.list.removeChild(self.listItems[i]);
+    };
+
+    self.setSearchFieldItem = function() {
+        self.searchBox = document.createElement('li');
+        self.searchBox.className = 'fakeselect-search';
+        self.searchField = document.createElement('input');
+        self.searchField.setAttribute('type', 'text');
+        self.searchField.setAttribute('name', 'fakeselect-search');
+        self.searchField.setAttribute('placeholder', self.settings.searchText);
+        self.searchButton = document.createElement('button');
+        self.searchButton.setAttribute('type', 'button');
+        self.searchBox.appendChild(self.searchField);
+        self.searchBox.appendChild(self.searchButton);
+        self.list.appendChild(self.searchBox);
     };
 
     /* Method : set list item */
@@ -187,6 +210,11 @@ var vanillaFakeSelect = function(el, settings) {
             e.preventDefault();
             self.setVisibility();
         }, 1);
+
+        if (self.settings.displaySearch) {
+            self.searchField.addEventListener('keyup', self.filterDisplayedResults, 1);
+            self.searchButton.addEventListener('click', self.filterDisplayedResults, 1);
+        }
 
         // Select change : set cover
         self.el.addEventListener('focus', self.setFocusOnButton, 1);
@@ -277,12 +305,38 @@ var vanillaFakeSelect = function(el, settings) {
                 self.setCurrentValue(i);
                 break;
             }
-            /* If content contains with autocomplete string */
+            /* If content contains autocomplete string */
             if (self.settings.autocompleteInsideTerm && tmpValue.search(autocomplete) > -1) {
                 self.setCurrentValue(i);
                 break;
             }
         }
+    };
+
+    self.resetDisplayedResults = function() {
+        for (var i = 0, len = self.listItems.length; i < len; i++) {
+            self.listItems[i].setAttribute('data-visible', 1);
+        }
+    };
+
+    self.filterDisplayedResults = function(e) {
+        /* Down : go to first result */
+        if (e.keyCode && e.keyCode == 40) {
+            e.preventDefault();
+            e.stopPropagation();
+            self.searchField.blur();
+            self.setActiveListItem('more');
+            return;
+        }
+        self.resetDisplayedResults();
+        for (var i = 0, len = self.listItems.length; i < len; i++) {
+            self.listItems[i].setAttribute('data-visible', 0);
+            if (self.listItems[i].innerText.toLowerCase().search(self.searchField.value) > -1) {
+                self.listItems[i].setAttribute('data-visible', 1);
+            }
+        }
+        self.setActiveListItem(self.getFirstActiveElement());
+
     };
 
     self.clearAutocomplete = function() {
@@ -361,6 +415,14 @@ var vanillaFakeSelect = function(el, settings) {
         self.isExpanded = mode;
         self.wrapper.setAttribute('aria-expanded', self.isExpanded);
 
+        /* Reset search */
+        if (!self.isExpanded && self.searchField && self.searchResetSearchOnClose) {
+            setTimeout(function() {
+                self.searchField.value = '';
+                self.resetDisplayedResults();
+            }, 50);
+        }
+
         /* Set temporary value on toggle */
         self.tmpValue = self.el.selectedIndex;
 
@@ -378,8 +440,8 @@ var vanillaFakeSelect = function(el, settings) {
     /* Set active list item */
     self.setActiveListItem = function(i) {
         var maxItemNb = self.listItems.length,
+            lastActiveElement = self.getLastActiveElement(),
             originI = i;
-
         if (i == 'plus') {
             i = self.tmpValue + 1;
         }
@@ -395,22 +457,33 @@ var vanillaFakeSelect = function(el, settings) {
         i = Math.max(0, i);
         i = Math.min(maxItemNb - 1, i);
 
-        // If item is disabled : do not move
-        if (self.el.options[i].disabled) {
+        // Ensure tmpValue is correct
+        self.tmpValue = i;
+
+        // If item is not available : do not move
+        if (!self.isActiveElement(i)) {
             // Try to jump the disabled item
+
             // Plus
-            if (originI == 'plus' && i < maxItemNb) {
-                self.setActiveListItem(i + 1);
+            if (originI === 0 || (originI == 'plus' && i < maxItemNb)) {
+                if (originI == lastActiveElement) {
+                    self.setActiveListItem(lastActiveElement);
+                }
+                else {
+                    self.setActiveListItem('plus');
+                }
             }
             // Less
-            if (originI == 'less' && i > 0) {
-                self.setActiveListItem(i - 1);
+            if (originI == 'less') {
+                if (i > 0) {
+                    self.setActiveListItem('less');
+                }
+                else {
+                    self.setActiveListItem(self.getFirstActiveElement());
+                }
             }
             return false;
         }
-
-        // Ensure tmpValue is correct
-        self.tmpValue = i;
 
         // Remove current class
         for (var ii = 0; ii < maxItemNb; ii++) {
@@ -423,6 +496,39 @@ var vanillaFakeSelect = function(el, settings) {
             self.listItems[i].scrollIntoView();
         }
 
+    };
+
+    self.isActiveElement = function(i) {
+        /* Hidden */
+        if (self.listItems[i].getAttribute('data-visible') === 0 || self.listItems[i].getAttribute('data-visible') == '0') {
+            return false;
+        }
+        /* Disabled */
+        if (self.listItems[i].getAttribute('data-disabled') == 1 || self.listItems[i].disabled) {
+            return false;
+        }
+        return true;
+    };
+
+    self.getFirstActiveElement = function(i) {
+        var maxItemNb = self.el.options.length;
+        for (var ii = 0; ii < maxItemNb; ii++) {
+            if (self.isActiveElement(ii)) {
+                return ii;
+            }
+        }
+        return 0;
+    };
+
+    self.getLastActiveElement = function(i) {
+        var lastActiveElement = 0;
+        var maxItemNb = self.el.options.length;
+        for (var ii = 0; ii < maxItemNb; ii++) {
+            if (self.isActiveElement(ii)) {
+                lastActiveElement = ii;
+            }
+        }
+        return lastActiveElement;
     };
 
     /* Refresh
