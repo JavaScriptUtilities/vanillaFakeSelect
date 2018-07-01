@@ -1,6 +1,6 @@
 /*
  * Plugin Name: Vanilla Fake Select
- * Version: 0.12.0
+ * Version: 0.12.1
  * Plugin URL: https://github.com/Darklg/JavaScriptUtilities
  * JavaScriptUtilities Vanilla Fake Select may be freely distributed under the MIT license.
  */
@@ -10,7 +10,7 @@
 var vanillaFakeSelect = function(el, settings) {
     "use strict";
     var self = this;
-    self.defaultSettings = {
+    var _defaultSettings = {
         autocompleteInsideTerm: false,
         displaySearch: true,
         searchResetSearchOnClose: false,
@@ -24,181 +24,192 @@ var vanillaFakeSelect = function(el, settings) {
     };
 
     /* Items */
-    self.el = el;
-    self.wrapper = false;
-    self.searchBox = false;
-    self.searchField = false;
-    self.cover = false;
-    self.list = false;
-    self.listItems = [];
-    self.isExpanded = false;
-    self.userInteracted = false;
-    self.tmpOptgroup = false;
-    self.previousOptgroup = false;
+    var _el = el;
+    var _wrapper = false;
+    var _searchBox = false;
+    var _searchField = false;
+    var _searchButton = false;
+    var _cover = false;
+    var _list = false;
+    var _listItems = [];
+    var _isExpanded = false;
+    var _userInteracted = false;
+    var _tmpOptGroup = false;
+    var _previousOptGroup = false;
 
     /* Autocomplete */
-    self.letter = '';
-    self.autocomplete = '';
-    self.autocompleteTimer = false;
+    var _letter = '';
+    var _autocomplete = '';
+    var _autocompleteTimer = false;
+
+    /* Settings */
+    var _appSettings = false;
 
     /* Method init */
-    self.init = function(settings) {
-        self.getSettings(settings);
-        self.setElements();
-        self.setEvents();
+    var self_init = function(settings) {
+        _appSettings = self.getSettings(settings, _defaultSettings);
+        setElements();
+        setEvents();
     };
 
     /* set Elements
     -------------------------- */
 
-    self.setElements = function() {
+    var setElements = function() {
 
-        self.el.setAttribute('tabindex', '-1');
+        _el.setAttribute('tabindex', '-1');
 
         // Create items
-        self.setElWrapper();
-        self.setElCover();
-        self.setElList();
+        setElWrapper();
+        setElCover();
+        setElList();
 
         // Inject wrapper next to el
-        self.el.parentNode.insertBefore(self.wrapper, self.el.nextSibling);
+        _el.parentNode.insertBefore(_wrapper, _el.nextSibling);
 
         // Move el into wrapper
-        self.wrapper.appendChild(self.el);
+        _wrapper.appendChild(_el);
 
     };
 
     /* Method : set wrapper */
-    self.setElWrapper = function() {
-        self.wrapper = document.createElement('div');
-        self.wrapper.setAttribute('role', 'combobox');
-        self.wrapper.className = 'fakeselect-wrapper ' + self.settings.coverClass;
-        self.setVisibility(false);
+    var setElWrapper = function() {
+        _wrapper = self.cEl('div', [
+            ['role', 'combobox'],
+            ['class', 'fakeselect-wrapper ' + _appSettings.coverClass]
+        ]);
+        setVisibility(false);
     };
 
     /* Method : set cover */
-    self.setElCover = function() {
-        if (!self.cover) {
-            self.cover = document.createElement('a');
-            self.cover.setAttribute('href', '#');
-            self.cover.setAttribute('role', 'button');
-            self.cover.className = 'fakeselect-cover';
-            self.wrapper.appendChild(self.cover);
+    var setElCover = function() {
+        if (!_cover) {
+            _cover = self.cEl('a', [
+                ['href', '#'],
+                ['role', 'button'],
+                ['class', 'fakeselect-cover']
+            ]);
+            _wrapper.appendChild(_cover);
         }
-        self.setElDisabled();
-        self.setCoverValue(true);
+        setElDisabled();
+        setCoverValue(true);
     };
 
-    self.setElDisabled = function() {
-        self.cover.disabled = self.el.disabled;
+    var setElDisabled = function() {
+        _cover.disabled = _el.disabled;
     };
 
     /* Method : set list */
-    self.setElList = function() {
+    var setElList = function() {
 
         var i, len;
 
         // Create list if it doesn't exists
-        if (!self.list) {
-            self.list = document.createElement('ul');
-            self.list.className = 'fakeselect-list';
-            self.list.setAttribute('role', 'listbox');
+        if (!_list) {
+            _list = self.cEl('ul', [
+                ['class', 'fakeselect-list'],
+                ['role', 'listbox']
+            ]);
         }
 
         // If existing values : clear all
-        if (self.listItems.length) {
-            for (i = 0, len = self.listItems.length; i < len; i++) {
-                self.unsetElListItem(i);
+        if (_listItems.length) {
+            for (i = 0, len = _listItems.length; i < len; i++) {
+                unsetElListItem(i);
             }
         }
 
-        if (self.settings.displaySearch) {
-            self.setSearchFieldItem();
+        if (_appSettings.displaySearch) {
+            setSearchFieldItem();
         }
 
         // Create values
-        for (i = 0, len = self.el.options.length; i < len; i++) {
-            self.setElListItem(i);
+        for (i = 0, len = _el.options.length; i < len; i++) {
+            setElListItem(i);
         }
 
         // Add items to the list
-        self.wrapper.appendChild(self.list);
+        _wrapper.appendChild(_list);
     };
 
     /* Method : unset list item */
-    self.unsetElListItem = function(i) {
-        self.listItems[i].removeEventListener('click', self.setCurrentValueEvent);
-        self.list.removeChild(self.listItems[i]);
+    var unsetElListItem = function(i) {
+        _listItems[i].removeEventListener('click', setCurrentValueEvent);
+        _list.removeChild(_listItems[i]);
     };
 
-    self.setSearchFieldItem = function() {
-        self.searchBox = document.createElement('li');
-        self.searchBox.className = 'fakeselect-search';
-        self.searchField = document.createElement('input');
-        self.searchField.setAttribute('type', 'text');
-        self.searchField.setAttribute('name', 'fakeselect-search');
-        self.searchField.setAttribute('placeholder', self.settings.searchText);
-        self.searchButton = document.createElement('button');
-        self.searchButton.setAttribute('type', 'button');
-        self.searchBox.appendChild(self.searchField);
-        self.searchBox.appendChild(self.searchButton);
-        self.list.appendChild(self.searchBox);
+    var setSearchFieldItem = function() {
+        _searchBox = self.cEl('li', [
+            ['class', 'fakeselect-search']
+        ]);
+
+        _searchField = self.cEl('input', [
+            ['type', 'text'],
+            ['name', 'fakeselect-search'],
+            ['placeholder', _appSettings.searchText]
+        ]);
+
+        _searchButton = self.cEl('button', [
+            ['type', 'button']
+        ]);
+
+        _searchBox.appendChild(_searchField);
+        _searchBox.appendChild(_searchButton);
+        _list.appendChild(_searchBox);
     };
 
     /* Method : set list item */
-    self.setElListItem = function(i) {
-        self.listItems[i] = document.createElement('li');
-        self.listItems[i].setAttribute('data-i', i);
-        self.listItems[i].setAttribute('role', 'option');
+    var setElListItem = function(i) {
+        _listItems[i] = self.cEl('li', [
+            ['data-i', i],
+            ['role', 'option']
+        ]);
 
         // Optgroup
-        self.tmpOptGroup = self.el.options[i].parentNode;
-        if (self.tmpOptGroup.tagName == 'OPTGROUP') {
-            self.listItems[i].setAttribute('data-optgroup', 1);
-            self.setOptgroup(self.tmpOptGroup);
+        _tmpOptGroup = _el.options[i].parentNode;
+        if (_tmpOptGroup.tagName == 'OPTGROUP') {
+            _listItems[i].setAttribute('data-optgroup', 1);
+            setOptgroup(_tmpOptGroup);
         }
 
         // Disabled
-        if (self.el.options[i].disabled) {
-            self.listItems[i].setAttribute('data-disabled', 1);
+        if (_el.options[i].disabled) {
+            _listItems[i].setAttribute('data-disabled', 1);
         }
-        self.listItems[i].innerHTML = self.settings.fakeOptionTemplate(self.el.options[i]);
-        self.list.appendChild(self.listItems[i]);
+        _listItems[i].innerHTML = _appSettings.fakeOptionTemplate(_el.options[i]);
+        _list.appendChild(_listItems[i]);
     };
 
-    self.setOptgroup = function(optGroup) {
-        var tmpLabel, liOptGroup;
-
-        if (optGroup == self.previousOptgroup) {
+    var setOptgroup = function(optGroup) {
+        if (optGroup == _previousOptGroup) {
             return;
         }
-        self.previousOptgroup = optGroup;
-
-        tmpLabel = optGroup.getAttribute('label') || '&nbsp;';
+        _previousOptGroup = optGroup;
 
         // Create label
-        liOptGroup = document.createElement('li');
-        liOptGroup.innerHTML = tmpLabel;
-        liOptGroup.className = 'optgroup-label';
-        self.list.appendChild(liOptGroup);
+        var liOptGroup = self.cEl('li', [
+            ['class', 'optgroup-label']
+        ]);
+        liOptGroup.innerHTML = optGroup.getAttribute('label') || '&nbsp;';
+        _list.appendChild(liOptGroup);
     };
 
     /* Set Events
     -------------------------- */
 
     /* Method set Events */
-    self.setEvents = function(onlyItems) {
+    var setEvents = function(onlyItems) {
         onlyItems = onlyItems || false;
 
         // Select selected item or first item
-        self.setCurrentValue(self.el.selectedIndex ? self.el.selectedIndex : 0, false);
+        setCurrentValue(_el.selectedIndex ? _el.selectedIndex : 0, false);
 
         // Click on list item
-        for (var i = 0, len = self.listItems.length; i < len; i++) {
-            if (self.listItems[i].getAttribute('data-disabled') == 1) {
+        for (var i = 0, len = _listItems.length; i < len; i++) {
+            if (_listItems[i].getAttribute('data-disabled') == 1) {
                 continue;
             }
-            self.listItems[i].addEventListener('click', self.setCurrentValueEvent, 1);
+            _listItems[i].addEventListener('click', setCurrentValueEvent, 1);
         }
 
         if (onlyItems) {
@@ -206,241 +217,244 @@ var vanillaFakeSelect = function(el, settings) {
         }
 
         // click cover : toggle visibility list
-        self.cover.addEventListener('click', function(e) {
+        _cover.addEventListener('click', function(e) {
             e.preventDefault();
-            self.setVisibility();
+            setVisibility();
         }, 1);
 
-        if (self.settings.displaySearch) {
-            self.searchField.addEventListener('keyup', self.filterDisplayedResults, 1);
-            self.searchButton.addEventListener('click', self.filterDisplayedResults, 1);
+        if (_appSettings.displaySearch) {
+            _searchField.addEventListener('keyup', filterDisplayedResults, 1);
+            _searchButton.addEventListener('click', filterDisplayedResults, 1);
         }
 
         // Select change : set cover
-        self.el.addEventListener('focus', self.setFocusOnButton, 1);
-        self.el.addEventListener('change', self.setCoverValue, 1);
-        self.el.addEventListener('initcover', self.setCoverValue, 1);
+        _el.addEventListener('focus', setFocusOnButton, 1);
+        _el.addEventListener('change', setCoverValue, 1);
+        _el.addEventListener('initcover', setCoverValue, 1);
 
         // Click outside
-        window.addEventListener('click', self.clickOutside, 1);
-        window.addEventListener('keydown', self.keyboardEvents, 1);
+        window.addEventListener('click', clickOutside, 1);
+        window.addEventListener('keydown', keyboardEvents, 1);
     };
 
     /* Keyboard events */
-    self.keyboardEvents = function(e) {
+    var keyboardEvents = function(e) {
         /* Close */
         if (e.keyCode == 27) {
-            self.clearAutocomplete();
-            self.setVisibility(false);
+            clearAutocomplete();
+            setVisibility(false);
         }
 
         /* Expanded : set temp value */
-        if (self.isExpanded) {
+        if (_isExpanded) {
 
             /* Tab */
             if (e.keyCode == 9) {
-                self.setVisibility(false);
+                setVisibility(false);
             }
 
             /* Arrow up */
             if (e.keyCode == 38) {
                 e.preventDefault();
-                self.setActiveListItem('less');
+                setActiveListItem('less');
             }
             /* Arrow down */
             if (e.keyCode == 40) {
                 e.preventDefault();
-                self.setActiveListItem('plus');
+                setActiveListItem('plus');
             }
             /* Enter */
             if (e.keyCode == 13) {
                 e.preventDefault();
-                self.setCurrentValue(self.tmpValue, true);
-                self.setVisibility(false);
+                setCurrentValue(self.tmpValue, true);
+                setVisibility(false);
             }
         }
 
         /* Not expanded but focused */
-        if (!self.isExpanded && self.isFocused()) {
+        if (!_isExpanded && isFocused()) {
             /* Arrow down */
             if (e.keyCode == 38 || e.keyCode == 40) {
                 e.preventDefault();
-                self.setVisibility(true);
+                setVisibility(true);
             }
         }
 
         /* Focused */
-        if (self.isFocused()) {
+        if (isFocused()) {
             /* Letter : autocomplete */
-            self.letter = String.fromCharCode(event.keyCode).toLowerCase();
-            if (/[a-z0-9-_ ]/.test(self.letter)) {
+            _letter = String.fromCharCode(event.keyCode).toLowerCase();
+            if (/[a-z0-9-_ ]/.test(_letter)) {
                 /* Disable timeout */
-                clearTimeout(self.autocompleteTimer);
+                clearTimeout(_autocompleteTimer);
                 /* Add to autocomplete */
-                self.autocomplete += self.letter;
+                _autocomplete += _letter;
                 /* Search for a value */
-                self.setActiveAutocompleteMatch(self.autocomplete);
+                setActiveAutocompleteMatch(_autocomplete);
                 /* After a certain time : disable autocomplete */
-                self.autocompleteTimer = setTimeout(self.clearAutocomplete, 1000);
+                _autocompleteTimer = setTimeout(clearAutocomplete, 1000);
             }
         }
     };
 
-    self.setActiveAutocompleteMatch = function(autocomplete) {
+    var setActiveAutocompleteMatch = function(autocomplete) {
         autocomplete = autocomplete || '';
         var i,
             tmpValue,
             aLen = autocomplete.length,
-            maxItemNb = self.el.options.length;
+            maxItemNb = _el.options.length;
 
         /* Search first result starting with autocomplete */
         for (i = 0; i < maxItemNb; i++) {
-            tmpValue = self.removeAccents(self.el.options[i].innerHTML).toLowerCase();
+            tmpValue = self.removeAccents(_el.options[i].innerHTML).toLowerCase();
             /* Ignore disabled items */
-            if (self.el.options[i].disabled) {
+            if (_el.options[i].disabled) {
                 continue;
             }
             /* If content starts with autocomplete string */
             if (tmpValue.substring(0, aLen) == autocomplete) {
-                self.setCurrentValue(i);
+                setCurrentValue(i);
                 break;
             }
             /* If content contains autocomplete string */
-            if (self.settings.autocompleteInsideTerm && tmpValue.search(autocomplete) > -1) {
-                self.setCurrentValue(i);
+            if (_appSettings.autocompleteInsideTerm && tmpValue.search(autocomplete) > -1) {
+                setCurrentValue(i);
                 break;
             }
         }
     };
 
-    self.resetDisplayedResults = function() {
-        for (var i = 0, len = self.listItems.length; i < len; i++) {
-            self.listItems[i].setAttribute('data-visible', 1);
+    var resetDisplayedResults = function() {
+        for (var i = 0, len = _listItems.length; i < len; i++) {
+            setItemVisibility(_listItems[i], 1);
         }
     };
 
-    self.filterDisplayedResults = function(e) {
+    var filterDisplayedResults = function(e) {
         /* Down : go to first result */
         if (e.keyCode && e.keyCode == 40) {
             e.preventDefault();
             e.stopPropagation();
-            self.searchField.blur();
-            self.setActiveListItem('more');
+            _searchField.blur();
+            setActiveListItem('more');
             return;
         }
-        self.resetDisplayedResults();
-        for (var i = 0, len = self.listItems.length; i < len; i++) {
-            self.listItems[i].setAttribute('data-visible', 0);
-            if (self.listItems[i].innerText.toLowerCase().search(self.searchField.value) > -1) {
-                self.listItems[i].setAttribute('data-visible', 1);
+        resetDisplayedResults();
+        for (var i = 0, len = _listItems.length; i < len; i++) {
+            setItemVisibility(_listItems[i], 0);
+            if (_listItems[i].innerText.toLowerCase().search(_searchField.value) > -1) {
+                setItemVisibility(_listItems[i], 1);
             }
         }
-        self.setActiveListItem(self.getFirstActiveElement());
-
+        setActiveListItem(getFirstActiveElement());
     };
 
-    self.clearAutocomplete = function() {
-        clearTimeout(self.autocompleteTimer);
-        self.letter = '';
-        self.autocomplete = '';
+    var setItemVisibility = function(item, visibility) {
+        item.setAttribute('data-visible', visibility);
     };
 
-    self.isFocused = function() {
-        return document.activeElement == self.cover;
+    var clearAutocomplete = function() {
+        clearTimeout(_autocompleteTimer);
+        _letter = '';
+        _autocomplete = '';
+    };
+
+    var isFocused = function() {
+        return document.activeElement == _cover;
     };
 
     /* Click outside wrapper : close */
-    self.clickOutside = function(e) {
-        if (!self.wrapper.contains(e.target)) {
-            self.setVisibility(false);
+    var clickOutside = function(e) {
+        if (!_wrapper.contains(e.target)) {
+            setVisibility(false);
         }
     };
 
     /* Method set Current value event */
-    self.setCurrentValueEvent = function() {
-        self.setCurrentValue(parseInt(this.getAttribute('data-i'), 10));
+    var setCurrentValueEvent = function() {
+        setCurrentValue(parseInt(this.getAttribute('data-i'), 10));
     };
 
     /* Method set Current value */
-    self.setCurrentValue = function(i, triggerChange) {
+    var setCurrentValue = function(i, triggerChange) {
         triggerChange = typeof triggerChange === "boolean" ? triggerChange : true;
 
         // Trigger changes on select
-        self.el.selectedIndex = i;
-        self.setVisibility(false);
+        _el.selectedIndex = i;
+        setVisibility(false);
         if (triggerChange) {
-            self.triggerEvent(self.el, 'change');
+            self.triggerEvent(_el, 'change');
         }
-        self.setActiveListItem(i);
+        setActiveListItem(i);
     };
 
     /* Method set Cover */
-    self.setCoverValue = function(initial) {
-        var tmpValue = self.settings.coverText,
+    var setCoverValue = function(initial) {
+        var tmpValue = _appSettings.coverText,
             tmpSelected;
-        if (!self.cover) {
+        if (!_cover) {
             return false;
         }
         if (typeof initial != 'boolean') {
             initial = false;
         }
         if (initial) {
-            for (var i = 0, len = self.el.options.length; i < len; i++) {
-                tmpSelected = self.el.options[i].getAttribute('selected');
+            for (var i = 0, len = _el.options.length; i < len; i++) {
+                tmpSelected = _el.options[i].getAttribute('selected');
                 if (typeof tmpSelected == 'string') {
-                    tmpValue = self.el.options[i].innerHTML;
+                    tmpValue = _el.options[i].innerHTML;
                 }
             }
         }
         else {
             // Get current value
-            if (typeof self.el.selectedIndex == 'number') {
-                tmpValue = self.el.options[self.el.selectedIndex].innerHTML;
+            if (typeof _el.selectedIndex == 'number') {
+                tmpValue = _el.options[_el.selectedIndex].innerHTML;
             }
         }
 
-        self.cover.innerHTML = tmpValue;
+        _cover.innerHTML = tmpValue;
     };
 
     /* Method focus */
-    self.setFocusOnButton = function() {
-        self.cover.focus();
+    var setFocusOnButton = function() {
+        _cover.focus();
     };
 
     /* Toggle list visibility */
-    self.setVisibility = function(mode) {
+    var setVisibility = function(mode) {
         if (typeof mode != 'boolean') {
-            mode = !self.isExpanded;
+            mode = !_isExpanded;
         }
-        self.isExpanded = mode;
-        self.wrapper.setAttribute('aria-expanded', self.isExpanded);
+        _isExpanded = mode;
+        _wrapper.setAttribute('aria-expanded', _isExpanded);
 
         /* Reset search */
-        if (!self.isExpanded && self.searchField && self.searchResetSearchOnClose) {
+        if (!_isExpanded && _searchField && self.searchResetSearchOnClose) {
             setTimeout(function() {
-                self.searchField.value = '';
-                self.resetDisplayedResults();
+                _searchField.value = '';
+                resetDisplayedResults();
             }, 50);
         }
 
         /* Set temporary value on toggle */
-        self.tmpValue = self.el.selectedIndex;
+        self.tmpValue = _el.selectedIndex;
 
         /* User has opened at least once */
         if (mode === true) {
-            self.userInteracted = true;
+            _userInteracted = true;
         }
 
         /* On close : ensure placeholder is replaced */
-        if (mode === false && self.userInteracted) {
-            self.setCoverValue();
+        if (mode === false && _userInteracted) {
+            setCoverValue();
         }
     };
 
     /* Set active list item */
-    self.setActiveListItem = function(i) {
-        var maxItemNb = self.listItems.length,
-            lastActiveElement = self.getLastActiveElement(),
+    var setActiveListItem = function(i) {
+        var maxItemNb = _listItems.length,
+            lastActiveElement = getLastActiveElement(),
             originI = i;
         if (i == 'plus') {
             i = self.tmpValue + 1;
@@ -461,25 +475,25 @@ var vanillaFakeSelect = function(el, settings) {
         self.tmpValue = i;
 
         // If item is not available : do not move
-        if (!self.isActiveElement(i)) {
+        if (!isActiveElement(i)) {
             // Try to jump the disabled item
 
             // Plus
             if (originI === 0 || (originI == 'plus' && i < maxItemNb)) {
                 if (originI == lastActiveElement) {
-                    self.setActiveListItem(lastActiveElement);
+                    setActiveListItem(lastActiveElement);
                 }
                 else {
-                    self.setActiveListItem('plus');
+                    setActiveListItem('plus');
                 }
             }
             // Less
             if (originI == 'less') {
                 if (i > 0) {
-                    self.setActiveListItem('less');
+                    setActiveListItem('less');
                 }
                 else {
-                    self.setActiveListItem(self.getFirstActiveElement());
+                    setActiveListItem(getFirstActiveElement());
                 }
             }
             return false;
@@ -487,44 +501,45 @@ var vanillaFakeSelect = function(el, settings) {
 
         // Remove current class
         for (var ii = 0; ii < maxItemNb; ii++) {
-            self.listItems[ii].setAttribute('data-current', 0);
+            _listItems[ii].setAttribute('data-current', 0);
         }
 
         // Add current class on current item
-        self.listItems[i].setAttribute('data-current', 1);
-        if (self.settings.enableScrollIntoView && self.listItems[i].scrollIntoView) {
-            self.listItems[i].scrollIntoView();
+        _listItems[i].setAttribute('data-current', 1);
+        if (_appSettings.enableScrollIntoView && _listItems[i].scrollIntoView) {
+            _listItems[i].scrollIntoView();
         }
 
     };
 
-    self.isActiveElement = function(i) {
+    var isActiveElement = function(i) {
         /* Hidden */
-        if (self.listItems[i].getAttribute('data-visible') === 0 || self.listItems[i].getAttribute('data-visible') == '0') {
+        var itemVisible = _listItems[i].getAttribute('data-visible');
+        if (itemVisible === 0 || itemVisible == '0') {
             return false;
         }
         /* Disabled */
-        if (self.listItems[i].getAttribute('data-disabled') == 1 || self.listItems[i].disabled) {
+        if (_listItems[i].getAttribute('data-disabled') == 1 || _listItems[i].disabled) {
             return false;
         }
         return true;
     };
 
-    self.getFirstActiveElement = function(i) {
-        var maxItemNb = self.el.options.length;
+    var getFirstActiveElement = function(i) {
+        var maxItemNb = _el.options.length;
         for (var ii = 0; ii < maxItemNb; ii++) {
-            if (self.isActiveElement(ii)) {
+            if (isActiveElement(ii)) {
                 return ii;
             }
         }
         return 0;
     };
 
-    self.getLastActiveElement = function(i) {
+    var getLastActiveElement = function(i) {
         var lastActiveElement = 0;
-        var maxItemNb = self.el.options.length;
+        var maxItemNb = _el.options.length;
         for (var ii = 0; ii < maxItemNb; ii++) {
-            if (self.isActiveElement(ii)) {
+            if (isActiveElement(ii)) {
                 lastActiveElement = ii;
             }
         }
@@ -535,8 +550,8 @@ var vanillaFakeSelect = function(el, settings) {
     -------------------------- */
 
     self.refresh = function() {
-        self.setElList();
-        self.setEvents(true);
+        setElList();
+        setEvents(true);
         return self;
     };
 
@@ -544,28 +559,28 @@ var vanillaFakeSelect = function(el, settings) {
     -------------------------- */
 
     self.destroyCalls = function() {
-        var parentItem = self.wrapper.parentNode;
+        var parentItem = _wrapper.parentNode;
 
         /* Restore select */
-        self.el.removeAttribute('tabindex');
+        _el.removeAttribute('tabindex');
 
         /* Move select */
-        parentItem.insertBefore(self.el, self.wrapper.nextSibling);
+        parentItem.insertBefore(_el, _wrapper.nextSibling);
 
         /* Remove events */
-        self.el.removeEventListener('focus', self.setFocusOnButton);
-        self.el.removeEventListener('change', self.setCoverValue);
-        self.el.removeEventListener('initcover', self.initCoverValue);
-        window.removeEventListener('click', self.clickOutside);
-        window.removeEventListener('keydown', self.keyboardEvents);
+        _el.removeEventListener('focus', setFocusOnButton);
+        _el.removeEventListener('change', setCoverValue);
+        _el.removeEventListener('initcover', setCoverValue);
+        window.removeEventListener('click', clickOutside);
+        window.removeEventListener('keydown', keyboardEvents);
 
         /* Delete wrapper */
-        parentItem.removeChild(self.wrapper);
+        parentItem.removeChild(_wrapper);
 
         return self;
     };
 
-    self.init(settings);
+    self_init(settings);
 
     return self;
 };
@@ -591,7 +606,7 @@ vanillaFakeSelect.prototype.removeAccents = function(str) {
 };
 
 /* Get Settings */
-vanillaFakeSelect.prototype.getSettings = function(settings) {
+vanillaFakeSelect.prototype.getSettings = function(settings, defaultSettings) {
     "use strict";
 
     var nSettings;
@@ -599,23 +614,29 @@ vanillaFakeSelect.prototype.getSettings = function(settings) {
         settings = {};
     }
     (function() {
-        if ('loadElement' in settings && settings.loadElement.getAttribute('data-settings')) {
-            nSettings = JSON.parse(settings.loadElement.getAttribute('data-settings'));
-            if (typeof nSettings == 'object') {
-                nSettings.el = settings.loadElement;
-                settings = nSettings;
-            }
+        if (!('loadElement' in settings)) {
+            return;
+        }
+        var _dataSettings = settings.loadElement.getAttribute('data-settings');
+        if (!_dataSettings) {
+            return;
+        }
+        nSettings = JSON.parse(_dataSettings);
+        if (typeof nSettings == 'object') {
+            nSettings.el = settings.loadElement;
+            settings = nSettings;
         }
     }());
-    this.settings = {};
+    var nSettingsFinal = {};
     // Set default values
-    for (var attr in this.defaultSettings) {
-        this.settings[attr] = this.defaultSettings[attr];
+    for (var attr in defaultSettings) {
+        nSettingsFinal[attr] = defaultSettings[attr];
     }
     // Set new values
     for (var attr2 in settings) {
-        this.settings[attr2] = settings[attr2];
+        nSettingsFinal[attr2] = settings[attr2];
     }
+    return nSettingsFinal;
 };
 
 /* Get Settings */
@@ -634,4 +655,12 @@ vanillaFakeSelect.prototype.triggerEvent = function(el, eventName, parameters) {
         e.triggerParams = parameters;
         return el.dispatchEvent(e);
     }
+};
+
+vanillaFakeSelect.prototype.cEl = function(elType, attributes) {
+    var _el = document.createElement(elType);
+    for (var i = 0, len = attributes.length; i < len; i++) {
+        _el.setAttribute(attributes[i][0], attributes[i][1]);
+    }
+    return _el;
 };
