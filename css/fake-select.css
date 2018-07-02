@@ -70,3 +70,15 @@
 .fakeselect-list li[data-visible="0"] {
     display: none;
 }
+
+/* Noresults
+-------------------------- */
+
+.fakeselect-noresults {
+    display: none;
+    background: transparent;
+}
+
+.fakeselect-noresults[data-visible="1"] {
+    display: block;
+}

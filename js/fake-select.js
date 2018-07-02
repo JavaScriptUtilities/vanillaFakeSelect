@@ -1,6 +1,6 @@
 /*
  * Plugin Name: Vanilla Fake Select
- * Version: 0.12.1
+ * Version: 0.12.2
  * Plugin URL: https://github.com/Darklg/JavaScriptUtilities
  * JavaScriptUtilities Vanilla Fake Select may be freely distributed under the MIT license.
  */
@@ -14,6 +14,7 @@ var vanillaFakeSelect = function(el, settings) {
         autocompleteInsideTerm: false,
         displaySearch: true,
         searchResetSearchOnClose: false,
+        noResultsText: 'No results found',
         searchText: 'Search a value',
         coverText: 'Select a value',
         coverClass: '',
@@ -28,6 +29,7 @@ var vanillaFakeSelect = function(el, settings) {
     var _wrapper = false;
     var _searchBox = false;
     var _searchField = false;
+    var _searchNoResults = false;
     var _searchButton = false;
     var _cover = false;
     var _list = false;
@@ -153,9 +155,15 @@ var vanillaFakeSelect = function(el, settings) {
             ['type', 'button']
         ]);
 
+        _searchNoResults = self.cEl('li', [
+            ['class', 'fakeselect-noresults']
+        ]);
+        _searchNoResults.innerHTML = _appSettings.noResultsText;
+
         _searchBox.appendChild(_searchField);
         _searchBox.appendChild(_searchButton);
         _list.appendChild(_searchBox);
+        _list.appendChild(_searchNoResults);
     };
 
     /* Method : set list item */
@@ -325,6 +333,7 @@ var vanillaFakeSelect = function(el, settings) {
     };
 
     var resetDisplayedResults = function() {
+        setItemVisibility(_searchNoResults, 0);
         for (var i = 0, len = _listItems.length; i < len; i++) {
             setItemVisibility(_listItems[i], 1);
         }
@@ -480,11 +489,17 @@ var vanillaFakeSelect = function(el, settings) {
 
             // Plus
             if (originI === 0 || (originI == 'plus' && i < maxItemNb)) {
-                if (originI == lastActiveElement) {
-                    setActiveListItem(lastActiveElement);
+                if (lastActiveElement !== false) {
+                    if (originI == lastActiveElement) {
+                        setActiveListItem(lastActiveElement);
+                    }
+                    else {
+                        setActiveListItem('plus');
+                    }
                 }
                 else {
-                    setActiveListItem('plus');
+                    /* No results : display a message */
+                    setItemVisibility(_searchNoResults, 1);
                 }
             }
             // Less
@@ -536,7 +551,7 @@ var vanillaFakeSelect = function(el, settings) {
     };
 
     var getLastActiveElement = function(i) {
-        var lastActiveElement = 0;
+        var lastActiveElement = false;
         var maxItemNb = _el.options.length;
         for (var ii = 0; ii < maxItemNb; ii++) {
             if (isActiveElement(ii)) {
