@@ -1,6 +1,6 @@
 /*
  * Plugin Name: Vanilla Fake Select
- * Version: 0.12.2
+ * Version: 0.12.3
  * Plugin URL: https://github.com/Darklg/JavaScriptUtilities
  * JavaScriptUtilities Vanilla Fake Select may be freely distributed under the MIT license.
  */
@@ -291,7 +291,7 @@ var vanillaFakeSelect = function(el, settings) {
         /* Focused */
         if (isFocused()) {
             /* Letter : autocomplete */
-            _letter = String.fromCharCode(event.keyCode).toLowerCase();
+            _letter = getCleanValue(String.fromCharCode(event.keyCode));
             if (/[a-z0-9-_ ]/.test(_letter)) {
                 /* Disable timeout */
                 clearTimeout(_autocompleteTimer);
@@ -314,7 +314,7 @@ var vanillaFakeSelect = function(el, settings) {
 
         /* Search first result starting with autocomplete */
         for (i = 0; i < maxItemNb; i++) {
-            tmpValue = self.removeAccents(_el.options[i].innerHTML).toLowerCase();
+            tmpValue = getCleanValue(_el.options[i].innerHTML);
             /* Ignore disabled items */
             if (_el.options[i].disabled) {
                 continue;
@@ -340,6 +340,7 @@ var vanillaFakeSelect = function(el, settings) {
     };
 
     var filterDisplayedResults = function(e) {
+        var searchValue = getCleanValue(_searchField.value);
         /* Down : go to first result */
         if (e.keyCode && e.keyCode == 40) {
             e.preventDefault();
@@ -351,7 +352,7 @@ var vanillaFakeSelect = function(el, settings) {
         resetDisplayedResults();
         for (var i = 0, len = _listItems.length; i < len; i++) {
             setItemVisibility(_listItems[i], 0);
-            if (_listItems[i].innerText.toLowerCase().search(_searchField.value) > -1) {
+            if (getCleanValue(_listItems[i].innerText).search(searchValue) > -1) {
                 setItemVisibility(_listItems[i], 1);
             }
         }
@@ -559,6 +560,10 @@ var vanillaFakeSelect = function(el, settings) {
             }
         }
         return lastActiveElement;
+    };
+
+    var getCleanValue = function(value) {
+        return self.removeAccents(value).toLowerCase();
     };
 
     /* Refresh
