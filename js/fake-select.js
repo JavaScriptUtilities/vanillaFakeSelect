@@ -1,6 +1,6 @@
 /*
  * Plugin Name: Vanilla Fake Select
- * Version: 0.12.3
+ * Version: 0.12.4
  * Plugin URL: https://github.com/Darklg/JavaScriptUtilities
  * JavaScriptUtilities Vanilla Fake Select may be freely distributed under the MIT license.
  */
@@ -438,13 +438,22 @@ var vanillaFakeSelect = function(el, settings) {
         }
         _isExpanded = mode;
         _wrapper.setAttribute('aria-expanded', _isExpanded);
+        self.triggerEvent(_el, 'vff-setvisibility', {
+            'isExpanded': isExpanded
+        });
 
         /* Reset search */
         if (!_isExpanded && _searchField && self.searchResetSearchOnClose) {
             setTimeout(function() {
                 _searchField.value = '';
                 resetDisplayedResults();
-            }, 50);
+            }, 100);
+        }
+        /* Set search */
+        if (_isExpanded && _searchField) {
+            setTimeout(function() {
+                _searchField.focus();
+            }, 100);
         }
 
         /* Set temporary value on toggle */
