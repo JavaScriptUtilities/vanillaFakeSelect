@@ -1,6 +1,6 @@
 /*
  * Plugin Name: Vanilla Fake Select
- * Version: 0.12.5
+ * Version: 0.13.0
  * Plugin URL: https://github.com/Darklg/JavaScriptUtilities
  * JavaScriptUtilities Vanilla Fake Select may be freely distributed under the MIT license.
  */
@@ -21,6 +21,13 @@ var vanillaFakeSelect = function(el, settings) {
         enableScrollIntoView: false,
         fakeOptionTemplate: function(el) {
             return el.innerHTML;
+        },
+        fakeCoverTemplate: function(el, i, _listItems) {
+            var tmpValue = _el.options[i].innerHTML;
+            if (_listItems[i]) {
+                tmpValue = _listItems[i].innerHTML;
+            }
+            return tmpValue;
         }
     };
 
@@ -132,6 +139,8 @@ var vanillaFakeSelect = function(el, settings) {
 
         // Add items to the list
         _wrapper.appendChild(_list);
+
+        setCoverValue();
     };
 
     /* Method : unset list item */
@@ -412,14 +421,14 @@ var vanillaFakeSelect = function(el, settings) {
             for (var i = 0, len = _el.options.length; i < len; i++) {
                 tmpSelected = _el.options[i].getAttribute('selected');
                 if (typeof tmpSelected == 'string') {
-                    tmpValue = _el.options[i].innerHTML;
+                    tmpValue = _appSettings.fakeCoverTemplate(el, i, _listItems);
                 }
             }
         }
         else {
             // Get current value
             if (typeof _el.selectedIndex == 'number') {
-                tmpValue = _el.options[_el.selectedIndex].innerHTML;
+                tmpValue = _appSettings.fakeCoverTemplate(el, _el.selectedIndex, _listItems);
             }
         }
 
@@ -550,7 +559,7 @@ var vanillaFakeSelect = function(el, settings) {
         return true;
     };
 
-    var getFirstActiveElement = function(i) {
+    var getFirstActiveElement = function() {
         var maxItemNb = _el.options.length;
         for (var ii = 0; ii < maxItemNb; ii++) {
             if (isActiveElement(ii)) {
@@ -560,7 +569,7 @@ var vanillaFakeSelect = function(el, settings) {
         return 0;
     };
 
-    var getLastActiveElement = function(i) {
+    var getLastActiveElement = function() {
         var lastActiveElement = false;
         var maxItemNb = _el.options.length;
         for (var ii = 0; ii < maxItemNb; ii++) {
